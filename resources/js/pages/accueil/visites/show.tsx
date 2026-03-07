@@ -38,7 +38,8 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Voir la visite" />
-            <div className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
+            <div className="p-5">
+            <div className="space-y-4 rounded-xl border  bg-background p-4 dark:border-sidebar-border">
                 <h1 className="text-lg font-semibold">Voir la visite</h1>
                 <dl className="grid gap-4 md:grid-cols-2">
                     <Detail
@@ -116,6 +117,7 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                         triggerClassName="rounded-md border px-3 py-2 text-sm"
                     />
                 </div>
+            </div>
             </div>
         </AppLayout>
     );

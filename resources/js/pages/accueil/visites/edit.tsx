@@ -66,9 +66,10 @@ export default function EditAccueilVisit({ visit, demandeurs, departments }: Edi
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Modifier la visite" />
-            <form
+           <div className="p-5">
+           <form
                 onSubmit={submit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <h1 className="text-lg font-semibold">Modifier la visite</h1>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -201,6 +202,7 @@ export default function EditAccueilVisit({ visit, demandeurs, departments }: Edi
                     Enregistrer
                 </button>
             </form>
+           </div>
         </AppLayout>
     );
 }
