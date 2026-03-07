@@ -17,7 +17,8 @@ class DashboardController extends Controller
 
     public function index(Request $request): Response
     {
-        $data = $this->visitWorkflowService->dashboardData();
+        $chartFilters = $request->only(['chart_mode', 'chart_month', 'chart_date_from', 'chart_date_to']);
+        $data = $this->visitWorkflowService->dashboardData([], $chartFilters);
 
         return Inertia::render('accueil/dashboard', [
             'stats' => $data['stats'],
@@ -25,6 +26,7 @@ class DashboardController extends Controller
             'presentVisitors' => $data['present_visitors'],
             'latestVisits' => $data['latest_visits'],
             'visitorChart' => $data['visitor_chart'],
+            'chartFilters' => $data['chart_filters'],
         ]);
     }
 }

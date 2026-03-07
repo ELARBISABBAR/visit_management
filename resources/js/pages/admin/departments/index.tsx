@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { PaginationControls } from '@/components/pagination-controls';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -12,6 +13,10 @@ type Department = {
 type DepartmentsPageProps = {
     departments: {
         data: Department[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
 };
 
@@ -82,6 +87,7 @@ export default function DepartmentsIndex({ departments }: DepartmentsPageProps) 
                         ))}
                     </tbody>
                 </table>
+                <PaginationControls pagination={departments} />
             </div>
         </AppLayout>
     );

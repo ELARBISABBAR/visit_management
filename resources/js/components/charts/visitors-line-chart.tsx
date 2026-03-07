@@ -9,6 +9,7 @@ import {
     Tooltip,
     type ChartOptions,
 } from 'chart.js';
+import type { ReactNode } from 'react';
 import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
@@ -17,12 +18,14 @@ type VisitorsLineChartProps = {
     labels: string[];
     data: number[];
     title?: string;
+    actions?: ReactNode;
 };
 
 export function VisitorsLineChart({
     labels,
     data,
     title = 'Total des visiteurs par jour',
+    actions,
 }: VisitorsLineChartProps) {
     const chartData = {
         labels,
@@ -65,7 +68,10 @@ export function VisitorsLineChart({
 
     return (
         <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-            <h2 className="mb-3 text-lg font-semibold">{title}</h2>
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                <h2 className="text-lg font-semibold">{title}</h2>
+                {actions}
+            </div>
             <div className="h-72">
                 <Line data={chartData} options={options} />
             </div>

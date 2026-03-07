@@ -68,6 +68,9 @@ class VisitController extends Controller
             'visit' => [
                 'id' => $visit->id,
                 'visitor_name' => $visit->visitor_name,
+                'is_event' => $visit->is_event,
+                'event_name' => $visit->event_name,
+                'event_visitors' => $visit->event_visitors ?? [],
                 'visitor_type' => $visit->visitor_type,
                 'company' => $visit->company,
                 'department' => $visit->department?->name,
@@ -94,6 +97,9 @@ class VisitController extends Controller
             'visit' => [
                 'id' => $visit->id,
                 'visitor_name' => $visit->visitor_name,
+                'is_event' => $visit->is_event,
+                'event_name' => $visit->event_name,
+                'event_visitors' => $visit->event_visitors ?? [],
                 'visitor_type' => $visit->visitor_type,
                 'company' => $visit->company,
                 'department_id' => $visit->department_id,

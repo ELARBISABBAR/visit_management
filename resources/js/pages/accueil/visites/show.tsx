@@ -5,6 +5,9 @@ import type { BreadcrumbItem } from '@/types';
 
 type VisitDetails = {
     id: number;
+    is_event?: boolean;
+    event_name?: string | null;
+    event_visitors?: string[] | null;
     visitor_name: string;
     visitor_type: string;
     company?: string | null;
@@ -24,6 +27,8 @@ type VisitShowProps = {
 };
 
 export default function AccueilVisitShow({ visit }: VisitShowProps) {
+    const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord – Accueil', href: '/accueil/dashboard' },
         { title: 'Gestion des visites', href: '/accueil/visites' },
@@ -36,13 +41,17 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
             <div className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
                 <h1 className="text-lg font-semibold">Voir la visite</h1>
                 <dl className="grid gap-4 md:grid-cols-2">
-                    <Detail label="Nom du visiteur" value={visit.visitor_name} />
+                    <Detail
+                        label={visit.is_event ? "Nom de l'événement" : 'Nom du visiteur'}
+                        value={visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
+                    />
                     <Detail label="Type de visiteur" value={visit.visitor_type} />
                     <Detail label="Société" value={visit.company ?? '—'} />
                     <Detail label="Demandeur (hôte)" value={visit.demandeur ?? '—'} />
                     <Detail label="Département" value={visit.department ?? '—'} />
                     <Detail label="Date et heure de visite" value={visit.scheduled_at ?? '—'} />
                     <Detail label="Statut de la visite" value={visit.status_label ?? '—'} />
+                    <Detail label="Couleur du badge" value={badgeColorLabel} />
                     <Detail label="Heure d'arrivée" value={visit.arrival_at ?? '—'} />
                     <Detail label="Heure de départ" value={visit.departure_at ?? '—'} />
                     <Detail
@@ -50,6 +59,20 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                         value={visit.time_with_demandeur ?? '—'}
                     />
                 </dl>
+                {visit.is_event && (
+                    <div>
+                        <p className="text-sm font-medium">Participants de l'événement</p>
+                        {visit.event_visitors && visit.event_visitors.length > 0 ? (
+                            <ul className="list-inside list-disc text-sm text-muted-foreground">
+                                {visit.event_visitors.map((name, index) => (
+                                    <li key={`${name}-${index}`}>{name}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Aucun participant renseigné.</p>
+                        )}
+                    </div>
+                )}
                 <div>
                     <p className="text-sm font-medium">Motif de la visite</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-line">
@@ -105,5 +128,23 @@ function Detail({ label, value }: { label: string; value: string }) {
             <dd className="text-sm">{value}</dd>
         </div>
     );
+}
+
+function badgeColorByVisitorType(visitorType: string): string {
+    const type = visitorType.toLowerCase();
+
+    if (type === 'visiteur') {
+        return 'Badge bleu';
+    }
+
+    if (type === 'prestataire') {
+        return 'Badge jaune';
+    }
+
+    if (type === 'fournisseur') {
+        return 'Badge rouge';
+    }
+
+    return '—';
 }
 

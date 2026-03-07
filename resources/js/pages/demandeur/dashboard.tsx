@@ -28,6 +28,12 @@ type DemandeurDashboardProps = {
         labels: string[];
         data: number[];
     };
+    chartFilters: {
+        mode: 'month' | 'custom';
+        month: string;
+        date_from: string;
+        date_to: string;
+    };
 };
 
 type SharedPageProps = {
@@ -59,19 +65,35 @@ export default function DemandeurDashboard({
     todayVisits,
     historyVisits,
     visitorChart,
+    chartFilters,
 }: DemandeurDashboardProps) {
     const page = usePage<SharedPageProps>();
 
     // Simple automatic refresh to reflect status changes
     useEffect(() => {
         const interval = window.setInterval(() => {
-            router.reload({ only: ['stats', 'upcomingVisits', 'todayVisits', 'historyVisits'] });
+            router.reload({
+                only: ['stats', 'upcomingVisits', 'todayVisits', 'historyVisits', 'visitorChart'],
+            });
         }, 30000);
 
         return () => window.clearInterval(interval);
     }, []);
 
     const notifications = page.props.notifications ?? [];
+    const updateChartFilters = (next: Partial<DemandeurDashboardProps['chartFilters']>) => {
+        const merged = { ...chartFilters, ...next };
+        router.get(
+            '/demandeur/dashboard',
+            {
+                chart_mode: merged.mode,
+                chart_month: merged.month,
+                chart_date_from: merged.date_from,
+                chart_date_to: merged.date_to,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -136,6 +158,56 @@ export default function DemandeurDashboard({
                             labels={visitorChart.labels}
                             data={visitorChart.data}
                             title="Total de vos visiteurs par jour"
+                            actions={
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                        className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                        value={chartFilters.mode}
+                                        onChange={(e) =>
+                                            updateChartFilters({
+                                                mode: e.target.value as 'month' | 'custom',
+                                            })
+                                        }
+                                    >
+                                        <option value="month">Par mois</option>
+                                        <option value="custom">Période personnalisée</option>
+                                    </select>
+
+                                    {chartFilters.mode === 'month' ? (
+                                        <input
+                                            type="month"
+                                            className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                            value={chartFilters.month}
+                                            onChange={(e) =>
+                                                updateChartFilters({ month: e.target.value })
+                                            }
+                                        />
+                                    ) : (
+                                        <>
+                                            <input
+                                                type="date"
+                                                className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                                value={chartFilters.date_from}
+                                                onChange={(e) =>
+                                                    updateChartFilters({
+                                                        date_from: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                            <input
+                                                type="date"
+                                                className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                                value={chartFilters.date_to}
+                                                onChange={(e) =>
+                                                    updateChartFilters({
+                                                        date_to: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            }
                         />
                     </div>
 

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class DepartmentService
 {
-    public function paginateDepartments(int $perPage = 15): LengthAwarePaginator
+    public function paginateDepartments(int $perPage = 10): LengthAwarePaginator
     {
         return Department::query()
             ->orderBy('name')

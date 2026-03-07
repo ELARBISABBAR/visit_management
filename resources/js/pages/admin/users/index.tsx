@@ -1,9 +1,14 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { PaginationControls } from '@/components/pagination-controls';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem, User } from '@/types';
 
 type PaginatedUsers = {
     data: (Pick<User, 'id' | 'name' | 'email'> & { role?: string; created_at?: string | null })[];
+    current_page: number;
+    last_page: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
 };
 
 type UsersPageProps = {
@@ -102,6 +107,7 @@ export default function UsersIndex({ users }: UsersPageProps) {
                         ))}
                     </tbody>
                 </table>
+                <PaginationControls pagination={users} />
             </div>
         </AppLayout>
     );

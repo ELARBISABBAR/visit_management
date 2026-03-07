@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { PaginationControls } from '@/components/pagination-controls';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -19,6 +20,10 @@ type StatusOption = {
 type HistoryPageProps = {
     visits: {
         data: VisitRow[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
     filters: {
         search?: string;
@@ -45,6 +50,7 @@ export default function Historique({ visits, filters, statusOptions }: HistoryPa
         const newFilters = {
             ...filters,
             [key]: value,
+            page: 1,
         };
 
         router.get('/demandeur/visites/historique', newFilters, {
@@ -176,6 +182,7 @@ export default function Historique({ visits, filters, statusOptions }: HistoryPa
                             )}
                         </tbody>
                     </table>
+                    <PaginationControls pagination={visits} />
                 </div>
             </div>
         </AppLayout>

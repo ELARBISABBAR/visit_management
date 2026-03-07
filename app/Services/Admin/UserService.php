@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserService
 {
-    public function paginateUsers(int $perPage = 15): LengthAwarePaginator
+    public function paginateUsers(int $perPage = 10): LengthAwarePaginator
     {
         return User::query()
             ->orderBy('name')

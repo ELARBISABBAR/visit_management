@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
+import { PaginationControls } from '@/components/pagination-controls';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -9,12 +10,17 @@ type VisitRow = {
     company?: string | null;
     department?: string | null;
     scheduled_at?: string | null;
+    status?: string | null;
     status_label?: string | null;
 };
 
 type VisitsIndexProps = {
     visits: {
         data: VisitRow[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
 };
 
@@ -86,27 +92,30 @@ export default function VisitsIndex({ visits }: VisitsIndexProps) {
                                         >
                                             Détails
                                         </Link>
-                                        <ActionConfirmDialog
-                                            triggerLabel="Annuler"
-                                            title="Confirmer l'annulation"
-                                            description="Voulez-vous vraiment annuler cette visite ?"
-                                            confirmLabel="Oui, annuler"
-                                            onConfirm={() =>
-                                                router.post(
-                                                    `/demandeur/visites/${visit.id}/annuler`,
-                                                    {},
-                                                    { preserveScroll: true },
-                                                )
-                                            }
-                                            triggerClassName="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
-                                            confirmClassName="inline-flex items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
-                                        />
+                                        {visit.status === 'planned' && (
+                                            <ActionConfirmDialog
+                                                triggerLabel="Annuler"
+                                                title="Confirmer l'annulation"
+                                                description="Voulez-vous vraiment annuler cette visite ?"
+                                                confirmLabel="Oui, annuler"
+                                                onConfirm={() =>
+                                                    router.post(
+                                                        `/demandeur/visites/${visit.id}/annuler`,
+                                                        {},
+                                                        { preserveScroll: true },
+                                                    )
+                                                }
+                                                triggerClassName="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
+                                                confirmClassName="inline-flex items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                                            />
+                                        )}
                                     </td>
                                 </tr>
                             ))
                         )}
                     </tbody>
                 </table>
+                <PaginationControls pagination={visits} />
             </div>
         </AppLayout>
     );

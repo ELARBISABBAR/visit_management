@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Visit;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class VisitService
@@ -23,23 +22,26 @@ class VisitService
      *     history: array<int, array<string, mixed>>,
      * }
      */
-    public function getDashboardData(User $demandeur): array
+    public function getDashboardData(User $demandeur, array $chartFilters = []): array
     {
         $now = Carbon::now();
         $todayStart = $now->copy()->startOfDay();
         $todayEnd = $now->copy()->endOfDay();
-        $chartStart = $now->copy()->subDays(6)->startOfDay();
+        $chartRange = $this->resolveChartRange($chartFilters, $now);
+        $chartStart = $chartRange['start'];
+        $chartEnd = $chartRange['end'];
 
         $baseQuery = Visit::query()->where('demandeur_id', $demandeur->id);
         $dailyCounts = (clone $baseQuery)
             ->selectRaw('DATE(scheduled_at) as day, COUNT(*) as total')
             ->whereDate('scheduled_at', '>=', $chartStart->toDateString())
+            ->whereDate('scheduled_at', '<=', $chartEnd->toDateString())
             ->groupBy('day')
             ->pluck('total', 'day');
 
         $chartLabels = [];
         $chartData = [];
-        for ($date = $chartStart->copy(); $date->lte($todayEnd); $date->addDay()) {
+        for ($date = $chartStart->copy(); $date->lte($chartEnd); $date->addDay()) {
             $day = $date->toDateString();
             $chartLabels[] = $date->format('d/m');
             $chartData[] = (int) ($dailyCounts[$day] ?? 0);
@@ -65,6 +67,8 @@ class VisitService
             return [
                 'id' => $visit->id,
                 'visitor_name' => $visit->visitor_name,
+                'is_event' => $visit->is_event,
+                'event_visitors' => $visit->event_visitors ?? [],
                 'company' => $visit->company,
                 'department' => $visit->department?->name,
                 'scheduled_at' => optional($visit->scheduled_at)?->toDateTimeString(),
@@ -106,13 +110,19 @@ class VisitService
                 'labels' => $chartLabels,
                 'data' => $chartData,
             ],
+            'chart_filters' => [
+                'mode' => $chartRange['mode'],
+                'month' => $chartRange['month'],
+                'date_from' => $chartRange['date_from'],
+                'date_to' => $chartRange['date_to'],
+            ],
         ];
     }
 
     /**
      * Paginate all visits created by the demandeur.
      */
-    public function paginateForDemandeur(User $demandeur, int $perPage = 15): LengthAwarePaginator
+    public function paginateForDemandeur(User $demandeur, int $perPage = 10): LengthAwarePaginator
     {
         return Visit::query()
             ->where('demandeur_id', $demandeur->id)
@@ -122,6 +132,8 @@ class VisitService
                 return [
                     'id' => $visit->id,
                     'visitor_name' => $visit->visitor_name,
+                    'is_event' => $visit->is_event,
+                    'event_visitors' => $visit->event_visitors ?? [],
                     'company' => $visit->company,
                     'department' => $visit->department?->name,
                     'scheduled_at' => optional($visit->scheduled_at)?->toDateTimeString(),
@@ -155,9 +167,18 @@ class VisitService
             ]);
         }
 
+        $isEvent = filter_var($data['is_event'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $eventVisitors = $this->normalizeEventVisitors($data['event_visitors'] ?? []);
+        $name = $isEvent
+            ? trim((string) ($data['event_name'] ?? ''))
+            : trim((string) ($data['visitor_name'] ?? ''));
+
         return Visit::create([
             'demandeur_id' => $demandeur->id,
-            'visitor_name' => $data['visitor_name'],
+            'visitor_name' => $name,
+            'is_event' => $isEvent,
+            'event_name' => $isEvent ? $name : null,
+            'event_visitors' => $isEvent ? $eventVisitors : [],
             'visitor_type' => $data['visitor_type'],
             'company' => $data['company'] ?? null,
             'department_id' => $data['department_id'],
@@ -196,8 +217,17 @@ class VisitService
             ]);
         }
 
+        $isEvent = filter_var($data['is_event'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $eventVisitors = $this->normalizeEventVisitors($data['event_visitors'] ?? []);
+        $name = $isEvent
+            ? trim((string) ($data['event_name'] ?? ''))
+            : trim((string) ($data['visitor_name'] ?? ''));
+
         $visit->fill([
-            'visitor_name' => $data['visitor_name'],
+            'visitor_name' => $name,
+            'is_event' => $isEvent,
+            'event_name' => $isEvent ? $name : null,
+            'event_visitors' => $isEvent ? $eventVisitors : [],
             'visitor_type' => $data['visitor_type'],
             'company' => $data['company'] ?? null,
             'department_id' => $data['department_id'],
@@ -219,7 +249,7 @@ class VisitService
      *
      * @param  array<string, mixed>  $filters
      */
-    public function history(User $demandeur, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function history(User $demandeur, array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         $query = Visit::query()
             ->where('demandeur_id', $demandeur->id)
@@ -245,6 +275,8 @@ class VisitService
             return [
                 'id' => $visit->id,
                 'visitor_name' => $visit->visitor_name,
+                'is_event' => $visit->is_event,
+                'event_visitors' => $visit->event_visitors ?? [],
                 'company' => $visit->company,
                 'department' => $visit->department?->name,
                 'scheduled_at' => optional($visit->scheduled_at)?->toDateTimeString(),
@@ -274,6 +306,88 @@ class VisitService
         }
 
         return ! $query->exists();
+    }
+
+    /**
+     * @param  mixed  $eventVisitors
+     * @return array<int, string>
+     */
+    private function normalizeEventVisitors(mixed $eventVisitors): array
+    {
+        if (! is_array($eventVisitors)) {
+            return [];
+        }
+
+        $names = collect($eventVisitors)
+            ->map(fn (mixed $name): string => trim((string) $name))
+            ->filter(fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        return $names;
+    }
+
+    /**
+     * @param  array<string, mixed>  $chartFilters
+     * @return array{
+     *   start: Carbon,
+     *   end: Carbon,
+     *   mode: string,
+     *   month: string,
+     *   date_from: string,
+     *   date_to: string
+     * }
+     */
+    private function resolveChartRange(array $chartFilters, Carbon $now): array
+    {
+        $requestedMode = (string) ($chartFilters['chart_mode'] ?? 'month');
+        $mode = in_array($requestedMode, ['month', 'custom'], true)
+            ? $requestedMode
+            : 'month';
+
+        if ($mode === 'custom') {
+            $fromRaw = (string) ($chartFilters['chart_date_from'] ?? $now->copy()->subDays(6)->toDateString());
+            $toRaw = (string) ($chartFilters['chart_date_to'] ?? $now->toDateString());
+            try {
+                $start = Carbon::parse($fromRaw)->startOfDay();
+                $end = Carbon::parse($toRaw)->endOfDay();
+            } catch (\Throwable) {
+                $start = $now->copy()->subDays(6)->startOfDay();
+                $end = $now->copy()->endOfDay();
+            }
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            return [
+                'start' => $start,
+                'end' => $end,
+                'mode' => 'custom',
+                'month' => $now->format('Y-m'),
+                'date_from' => $start->toDateString(),
+                'date_to' => $end->toDateString(),
+            ];
+        }
+
+        $month = (string) ($chartFilters['chart_month'] ?? $now->format('Y-m'));
+        try {
+            $monthDate = Carbon::createFromFormat('Y-m', $month);
+        } catch (\Throwable) {
+            $monthDate = $now->copy();
+        }
+        $start = $monthDate->copy()->startOfMonth()->startOfDay();
+        $end = $monthDate->copy()->endOfMonth()->endOfDay();
+
+        return [
+            'start' => $start,
+            'end' => $end,
+            'mode' => 'month',
+            'month' => $monthDate->format('Y-m'),
+            'date_from' => $start->toDateString(),
+            'date_to' => $end->toDateString(),
+        ];
     }
 }
 

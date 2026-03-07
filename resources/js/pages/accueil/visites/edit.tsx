@@ -7,6 +7,9 @@ type Option = { id: number; name: string };
 type EditPageProps = {
     visit: {
         id: number;
+        is_event?: boolean;
+        event_name?: string | null;
+        event_visitors?: string[] | null;
         visitor_name: string;
         visitor_type: string;
         company?: string | null;
@@ -21,7 +24,10 @@ type EditPageProps = {
 };
 
 type VisitForm = {
+    is_event: boolean;
     visitor_name: string;
+    event_name: string;
+    event_visitors: string[];
     visitor_type: string;
     company: string;
     demandeur_id: number | '';
@@ -39,7 +45,10 @@ export default function EditAccueilVisit({ visit, demandeurs, departments }: Edi
     ];
 
     const { data, setData, put, processing, errors } = useForm<VisitForm>({
+        is_event: Boolean(visit.is_event),
         visitor_name: visit.visitor_name,
+        event_name: visit.event_name ?? visit.visitor_name,
+        event_visitors: visit.event_visitors && visit.event_visitors.length > 0 ? visit.event_visitors : [''],
         visitor_type: visit.visitor_type,
         company: visit.company ?? '',
         demandeur_id: visit.demandeur_id,
@@ -63,11 +72,22 @@ export default function EditAccueilVisit({ visit, demandeurs, departments }: Edi
             >
                 <h1 className="text-lg font-semibold">Modifier la visite</h1>
                 <div className="grid gap-4 md:grid-cols-2">
+                    <SelectField
+                        label="Type de visite"
+                        value={data.is_event ? '1' : '0'}
+                        onChange={(v) => setData('is_event', v === '1')}
+                        options={[
+                            { value: '0', label: 'Visite normale' },
+                            { value: '1', label: 'Visite événement' },
+                        ]}
+                    />
                     <Field
-                        label="Nom du visiteur"
-                        value={data.visitor_name}
-                        onChange={(v) => setData('visitor_name', v)}
-                        error={errors.visitor_name}
+                        label={data.is_event ? "Nom de l'événement" : 'Nom du visiteur'}
+                        value={data.is_event ? data.event_name : data.visitor_name}
+                        onChange={(v) =>
+                            data.is_event ? setData('event_name', v) : setData('visitor_name', v)
+                        }
+                        error={data.is_event ? errors.event_name : errors.visitor_name}
                     />
                     <SelectField
                         label="Type de visiteur"
@@ -115,6 +135,53 @@ export default function EditAccueilVisit({ visit, demandeurs, departments }: Edi
                         error={errors.visit_time}
                     />
                 </div>
+
+                {data.is_event && (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-sm font-medium">Participants de l'événement</h2>
+                            <button
+                                type="button"
+                                className="rounded-md border px-3 py-1 text-xs"
+                                onClick={() => setData('event_visitors', [...data.event_visitors, ''])}
+                            >
+                                Ajouter un nom
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {data.event_visitors.map((name, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                        placeholder={`Participant ${index + 1}`}
+                                        value={name}
+                                        onChange={(e) => {
+                                            const next = [...data.event_visitors];
+                                            next[index] = e.target.value;
+                                            setData('event_visitors', next);
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="rounded-md border border-destructive px-3 py-2 text-xs text-destructive"
+                                        onClick={() => {
+                                            const next = data.event_visitors.filter((_, i) => i !== index);
+                                            setData('event_visitors', next.length > 0 ? next : ['']);
+                                        }}
+                                    >
+                                        Retirer
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        {(errors.event_visitors || errors['event_visitors.0']) && (
+                            <p className="text-xs text-destructive">
+                                {errors.event_visitors ?? errors['event_visitors.0']}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex flex-col space-y-1">
                     <label className="text-sm font-medium">Motif de la visite</label>

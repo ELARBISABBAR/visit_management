@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import AppLayout from '@/layouts/app-layout';
+import { PaginationControls } from '@/components/pagination-controls';
 import {
     Dialog,
     DialogContent,
@@ -23,6 +24,9 @@ import type { BreadcrumbItem } from '@/types';
 
 type VisitRow = {
     id: number;
+    is_event?: boolean;
+    event_name?: string | null;
+    event_visitors?: string[] | null;
     visitor_name: string;
     visitor_type: string;
     company?: string | null;
@@ -46,7 +50,13 @@ type Option = {
 };
 
 type VisitsIndexProps = {
-    visits: { data: VisitRow[] };
+    visits: {
+        data: VisitRow[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
+    };
     filters: {
         date?: string;
         department_id?: string;
@@ -74,6 +84,7 @@ export default function AccueilVisitsIndex({
             {
                 ...filters,
                 [key]: value,
+                page: 1,
             },
             { preserveState: true, replace: true },
         );
@@ -179,7 +190,9 @@ export default function AccueilVisitsIndex({
                             {visits.data.map((visit, index) => (
                                 <tr key={visit.id} className="border-b last:border-b-0">
                                     <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
-                                    <td className="py-2 pr-4">{visit.visitor_name}</td>
+                                    <td className="py-2 pr-4">
+                                        {visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
+                                    </td>
                                     <td className="py-2 pr-4">{visit.visitor_type}</td>
                                     <td className="py-2 pr-4">{visit.company ?? '—'}</td>
                                     <td className="py-2 pr-4">{visit.demandeur ?? '—'}</td>
@@ -199,6 +212,7 @@ export default function AccueilVisitsIndex({
                             ))}
                         </tbody>
                     </table>
+                    <PaginationControls pagination={visits} />
                 </div>
             </div>
         </AppLayout>
@@ -206,6 +220,8 @@ export default function AccueilVisitsIndex({
 }
 
 function VisitPreviewModal({ visit }: { visit: VisitRow }) {
+    const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -230,7 +246,9 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                     <div className="flex items-start gap-3 rounded-lg border p-3">
                         <UserCircle2 className="mt-1 size-10 text-muted-foreground" />
                         <div>
-                            <h3 className="text-2xl font-semibold">{visit.visitor_name}</h3>
+                            <h3 className="text-2xl font-semibold">
+                                {visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
+                            </h3>
                             <p className="text-sm text-muted-foreground">Type de visiteur</p>
                             <p className="text-base font-medium">{visit.visitor_type}</p>
                             <p className="mt-2 text-sm text-muted-foreground">Son entreprise</p>
@@ -238,12 +256,34 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                         </div>
                     </div>
 
+                    {visit.is_event && (
+                        <div className="space-y-2 border-t pt-3">
+                            <p className="text-sm font-medium">Participants de l'événement</p>
+                            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+                                {visit.event_visitors && visit.event_visitors.length > 0 ? (
+                                    <ul className="list-inside list-disc">
+                                        {visit.event_visitors.map((name, index) => (
+                                            <li key={`${name}-${index}`}>{name}</li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    'Aucun participant renseigné.'
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid gap-3 md:grid-cols-2">
                         <InfoItem icon={<User className="size-4" />} label="Hôte" value={visit.demandeur ?? '—'} />
                         <InfoItem
                             icon={<Building2 className="size-4" />}
                             label="Département"
                             value={visit.department ?? '—'}
+                        />
+                        <InfoItem
+                            icon={<UserCircle2 className="size-4" />}
+                            label="Couleur du badge"
+                            value={badgeColorLabel}
                         />
                     </div>
 
@@ -308,5 +348,23 @@ function InfoItem({
             <p className="text-base font-medium">{value}</p>
         </div>
     );
+}
+
+function badgeColorByVisitorType(visitorType: string): string {
+    const type = visitorType.toLowerCase();
+
+    if (type === 'visiteur') {
+        return 'Badge bleu';
+    }
+
+    if (type === 'prestataire') {
+        return 'Badge jaune';
+    }
+
+    if (type === 'fournisseur') {
+        return 'Badge rouge';
+    }
+
+    return '—';
 }
 

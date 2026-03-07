@@ -18,7 +18,11 @@ class StoreVisitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'visitor_name' => ['required', 'string', 'max:255'],
+            'is_event' => ['nullable', 'boolean'],
+            'visitor_name' => ['exclude_if:is_event,1,true', 'required', 'string', 'max:255'],
+            'event_name' => ['exclude_unless:is_event,1,true', 'required', 'string', 'max:255'],
+            'event_visitors' => ['exclude_unless:is_event,1,true', 'array', 'min:1'],
+            'event_visitors.*' => ['exclude_unless:is_event,1,true', 'required', 'string', 'max:255'],
             'visitor_type' => ['required', 'string', Rule::in(['visiteur', 'prestataire', 'fournisseur'])],
             'company' => ['nullable', 'string', 'max:255'],
             'demandeur_id' => ['required', 'integer', 'exists:users,id'],
@@ -36,6 +40,10 @@ class StoreVisitRequest extends FormRequest
     {
         return [
             'visitor_name.required' => 'Le nom du visiteur est obligatoire.',
+            'visitor_name.required_unless' => 'Le nom du visiteur est obligatoire pour une visite normale.',
+            'event_name.required_if' => "Le nom de l'événement est obligatoire pour une visite événement.",
+            'event_visitors.min' => "Ajoutez au moins un participant pour l'événement.",
+            'event_visitors.*.required' => 'Chaque participant doit avoir un nom.',
             'visitor_type.required' => 'Le type de visiteur est obligatoire.',
             'demandeur_id.required' => 'Le demandeur est obligatoire.',
             'department_id.required' => 'Le département est obligatoire.',

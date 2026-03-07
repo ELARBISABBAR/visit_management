@@ -8,7 +8,10 @@ type Department = {
 };
 
 type CreateVisitForm = {
+    is_event: boolean;
     visitor_name: string;
+    event_name: string;
+    event_visitors: string[];
     visitor_type: string;
     company: string;
     department_id: number | '';
@@ -34,7 +37,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CreateVisit({ departments }: CreateVisitPageProps) {
     const { data, setData, post, processing, errors } = useForm<CreateVisitForm>({
+        is_event: false,
         visitor_name: '',
+        event_name: '',
+        event_visitors: [''],
         visitor_type: 'visiteur',
         company: '',
         department_id: '',
@@ -42,6 +48,7 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
         visit_time: '',
         reason: '',
     });
+    const visitError = (errors as Record<string, string | undefined>).visit;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,12 +65,30 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
                 <h1 className="text-lg font-semibold">Planifier une visite</h1>
 
                 <div className="grid gap-4 md:grid-cols-2">
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="is_event" className="text-sm font-medium">
+                            Type de visite
+                        </label>
+                        <select
+                            id="is_event"
+                            name="is_event"
+                            className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            value={data.is_event ? '1' : '0'}
+                            onChange={(e) => setData('is_event', e.target.value === '1')}
+                        >
+                            <option value="0">Visite normale</option>
+                            <option value="1">Visite événement</option>
+                        </select>
+                    </div>
+
                     <Field
-                        label="Nom du visiteur"
+                        label={data.is_event ? "Nom de l'événement" : 'Nom du visiteur'}
                         name="visitor_name"
-                        value={data.visitor_name}
-                        onChange={(value) => setData('visitor_name', value)}
-                        error={errors.visitor_name}
+                        value={data.is_event ? data.event_name : data.visitor_name}
+                        onChange={(value) =>
+                            data.is_event ? setData('event_name', value) : setData('visitor_name', value)
+                        }
+                        error={data.is_event ? errors.event_name : errors.visitor_name}
                     />
 
                     <div className="flex flex-col space-y-1">
@@ -141,6 +166,56 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
                     />
                 </div>
 
+                {data.is_event && (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-sm font-medium">Participants de l'événement</h2>
+                            <button
+                                type="button"
+                                className="rounded-md border px-3 py-1 text-xs"
+                                onClick={() =>
+                                    setData('event_visitors', [...data.event_visitors, ''])
+                                }
+                            >
+                                Ajouter un nom
+                            </button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {data.event_visitors.map((name, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        placeholder={`Participant ${index + 1}`}
+                                        value={name}
+                                        onChange={(e) => {
+                                            const next = [...data.event_visitors];
+                                            next[index] = e.target.value;
+                                            setData('event_visitors', next);
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="rounded-md border border-destructive px-3 py-2 text-xs text-destructive"
+                                        onClick={() => {
+                                            const next = data.event_visitors.filter((_, i) => i !== index);
+                                            setData('event_visitors', next.length > 0 ? next : ['']);
+                                        }}
+                                    >
+                                        Retirer
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        {(errors.event_visitors || errors['event_visitors.0']) && (
+                            <p className="text-xs text-destructive">
+                                {errors.event_visitors ?? errors['event_visitors.0']}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex flex-col space-y-1">
                     <label htmlFor="reason" className="text-sm font-medium">
                         Motif de la visite
@@ -155,8 +230,8 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
                     {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
                 </div>
 
-                {errors.visit && (
-                    <p className="text-sm font-medium text-destructive">{errors.visit}</p>
+                {visitError && (
+                    <p className="text-sm font-medium text-destructive">{visitError}</p>
                 )}
 
                 <div className="flex gap-3">

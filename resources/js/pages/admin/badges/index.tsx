@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { PaginationControls } from '@/components/pagination-controls';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -13,6 +14,10 @@ type Badge = {
 type BadgesPageProps = {
     badges: {
         data: Badge[];
+        current_page: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
     };
 };
 
@@ -83,6 +88,7 @@ export default function BadgesIndex({ badges }: BadgesPageProps) {
                         ))}
                     </tbody>
                 </table>
+                <PaginationControls pagination={badges} />
             </div>
         </AppLayout>
     );

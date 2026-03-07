@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class BadgeService
 {
-    public function paginateBadges(int $perPage = 15): LengthAwarePaginator
+    public function paginateBadges(int $perPage = 10): LengthAwarePaginator
     {
         return Badge::query()
             ->orderBy('code')

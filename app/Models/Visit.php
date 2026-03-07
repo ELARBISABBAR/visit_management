@@ -19,6 +19,9 @@ class Visit extends Model
     protected $fillable = [
         'demandeur_id',
         'visitor_name',
+        'is_event',
+        'event_name',
+        'event_visitors',
         'visitor_type',
         'company',
         'department_id',
@@ -40,6 +43,8 @@ class Visit extends Model
             'scheduled_at' => 'datetime',
             'arrival_at' => 'datetime',
             'status' => VisitStatus::class,
+            'is_event' => 'boolean',
+            'event_visitors' => 'array',
         ];
     }
 

@@ -57,10 +57,7 @@ class VisitPolicy
             return false;
         }
 
-        return in_array($visit->status, [
-            VisitStatus::PLANNED,
-            VisitStatus::IN_PROGRESS,
-        ], true);
+        return $visit->status === VisitStatus::PLANNED;
     }
 
     /**

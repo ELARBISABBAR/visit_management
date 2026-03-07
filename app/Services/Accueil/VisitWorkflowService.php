@@ -21,22 +21,26 @@ class VisitWorkflowService
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function dashboardData(array $filters = []): array
+    public function dashboardData(array $filters = [], array $chartFilters = []): array
     {
-        $todayStart = Carbon::now()->startOfDay();
-        $todayEnd = Carbon::now()->endOfDay();
-        $chartStart = Carbon::now()->subDays(6)->startOfDay();
+        $now = Carbon::now();
+        $todayStart = $now->copy()->startOfDay();
+        $todayEnd = $now->copy()->endOfDay();
+        $chartRange = $this->resolveChartRange($chartFilters, $now);
+        $chartStart = $chartRange['start'];
+        $chartEnd = $chartRange['end'];
 
         $todayQuery = Visit::query()->whereBetween('scheduled_at', [$todayStart, $todayEnd]);
         $dailyCounts = Visit::query()
             ->selectRaw('DATE(scheduled_at) as day, COUNT(*) as total')
             ->whereDate('scheduled_at', '>=', $chartStart->toDateString())
+            ->whereDate('scheduled_at', '<=', $chartEnd->toDateString())
             ->groupBy('day')
             ->pluck('total', 'day');
 
         $chartLabels = [];
         $chartData = [];
-        for ($date = $chartStart->copy(); $date->lte($todayEnd); $date->addDay()) {
+        for ($date = $chartStart->copy(); $date->lte($chartEnd); $date->addDay()) {
             $day = $date->toDateString();
             $chartLabels[] = $date->format('d/m');
             $chartData[] = (int) ($dailyCounts[$day] ?? 0);
@@ -66,13 +70,19 @@ class VisitWorkflowService
                 'labels' => $chartLabels,
                 'data' => $chartData,
             ],
+            'chart_filters' => [
+                'mode' => $chartRange['mode'],
+                'month' => $chartRange['month'],
+                'date_from' => $chartRange['date_from'],
+                'date_to' => $chartRange['date_to'],
+            ],
         ];
     }
 
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginateVisits(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function paginateVisits(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         $query = Visit::query()->orderByDesc('created_at');
 
@@ -100,10 +110,18 @@ class VisitWorkflowService
         Department::findOrFail($data['department_id']);
 
         $scheduledAt = $this->buildScheduledAt($data['visit_date'], $data['visit_time']);
+        $isEvent = filter_var($data['is_event'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $eventVisitors = $this->normalizeEventVisitors($data['event_visitors'] ?? []);
+        $name = $isEvent
+            ? trim((string) ($data['event_name'] ?? ''))
+            : trim((string) ($data['visitor_name'] ?? ''));
 
         return Visit::create([
             'demandeur_id' => $data['demandeur_id'],
-            'visitor_name' => $data['visitor_name'],
+            'visitor_name' => $name,
+            'is_event' => $isEvent,
+            'event_name' => $isEvent ? $name : null,
+            'event_visitors' => $isEvent ? $eventVisitors : [],
             'visitor_type' => $data['visitor_type'],
             'company' => $data['company'] ?? null,
             'department_id' => $data['department_id'],
@@ -144,10 +162,18 @@ class VisitWorkflowService
         }
 
         Department::findOrFail($data['department_id']);
+        $isEvent = filter_var($data['is_event'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $eventVisitors = $this->normalizeEventVisitors($data['event_visitors'] ?? []);
+        $name = $isEvent
+            ? trim((string) ($data['event_name'] ?? ''))
+            : trim((string) ($data['visitor_name'] ?? ''));
 
         $visit->fill([
             'demandeur_id' => $data['demandeur_id'],
-            'visitor_name' => $data['visitor_name'],
+            'visitor_name' => $name,
+            'is_event' => $isEvent,
+            'event_name' => $isEvent ? $name : null,
+            'event_visitors' => $isEvent ? $eventVisitors : [],
             'visitor_type' => $data['visitor_type'],
             'company' => $data['company'] ?? null,
             'department_id' => $data['department_id'],
@@ -284,6 +310,9 @@ class VisitWorkflowService
         return [
             'id' => $visit->id,
             'visitor_name' => $visit->visitor_name,
+            'is_event' => $visit->is_event,
+            'event_name' => $visit->event_name,
+            'event_visitors' => $visit->event_visitors ?? [],
             'visitor_type' => $visit->visitor_type,
             'company' => $visit->company,
             'demandeur' => $visit->demandeur?->name,
@@ -330,6 +359,86 @@ class VisitWorkflowService
     private function buildScheduledAt(string $date, string $time): Carbon
     {
         return Carbon::createFromFormat('Y-m-d H:i', $date.' '.$time);
+    }
+
+    /**
+     * @param  mixed  $eventVisitors
+     * @return array<int, string>
+     */
+    private function normalizeEventVisitors(mixed $eventVisitors): array
+    {
+        if (! is_array($eventVisitors)) {
+            return [];
+        }
+
+        return collect($eventVisitors)
+            ->map(fn (mixed $name): string => trim((string) $name))
+            ->filter(fn (string $name): bool => $name !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $chartFilters
+     * @return array{
+     *   start: Carbon,
+     *   end: Carbon,
+     *   mode: string,
+     *   month: string,
+     *   date_from: string,
+     *   date_to: string
+     * }
+     */
+    private function resolveChartRange(array $chartFilters, Carbon $now): array
+    {
+        $requestedMode = (string) ($chartFilters['chart_mode'] ?? 'month');
+        $mode = in_array($requestedMode, ['month', 'custom'], true)
+            ? $requestedMode
+            : 'month';
+
+        if ($mode === 'custom') {
+            $fromRaw = (string) ($chartFilters['chart_date_from'] ?? $now->copy()->subDays(6)->toDateString());
+            $toRaw = (string) ($chartFilters['chart_date_to'] ?? $now->toDateString());
+            try {
+                $start = Carbon::parse($fromRaw)->startOfDay();
+                $end = Carbon::parse($toRaw)->endOfDay();
+            } catch (\Throwable) {
+                $start = $now->copy()->subDays(6)->startOfDay();
+                $end = $now->copy()->endOfDay();
+            }
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            return [
+                'start' => $start,
+                'end' => $end,
+                'mode' => 'custom',
+                'month' => $now->format('Y-m'),
+                'date_from' => $start->toDateString(),
+                'date_to' => $end->toDateString(),
+            ];
+        }
+
+        $month = (string) ($chartFilters['chart_month'] ?? $now->format('Y-m'));
+        try {
+            $monthDate = Carbon::createFromFormat('Y-m', $month);
+        } catch (\Throwable) {
+            $monthDate = $now->copy();
+        }
+        $start = $monthDate->copy()->startOfMonth()->startOfDay();
+        $end = $monthDate->copy()->endOfMonth()->endOfDay();
+
+        return [
+            'start' => $start,
+            'end' => $end,
+            'mode' => 'month',
+            'month' => $monthDate->format('Y-m'),
+            'date_from' => $start->toDateString(),
+            'date_to' => $end->toDateString(),
+        ];
     }
 }
 

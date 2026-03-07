@@ -5,6 +5,9 @@ import type { BreadcrumbItem } from '@/types';
 
 type VisitDetails = {
     id: number;
+    is_event?: boolean;
+    event_name?: string | null;
+    event_visitors?: string[] | null;
     visitor_name: string;
     visitor_type: string;
     company?: string | null;
@@ -25,6 +28,8 @@ type VisitShowProps = {
 };
 
 export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps) {
+    const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Tableau de bord – Demandeur',
@@ -47,15 +52,33 @@ export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps)
                 <h1 className="text-lg font-semibold">Détails de la visite</h1>
 
                 <dl className="grid gap-4 md:grid-cols-2">
-                    <Detail label="Nom du visiteur" value={visit.visitor_name} />
+                    <Detail
+                        label={visit.is_event ? "Nom de l'événement" : 'Nom du visiteur'}
+                        value={visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
+                    />
                     <Detail label="Type de visiteur" value={visit.visitor_type} />
                     <Detail label="Entreprise / Société" value={visit.company ?? '—'} />
                     <Detail label="Département" value={visit.department ?? '—'} />
                     <Detail label="Date / heure de visite" value={visit.scheduled_at ?? '—'} />
                     <Detail label="Statut" value={visit.status_label ?? '—'} />
                     <Detail label="Heure d'arrivée" value={visit.arrival_at ?? '—'} />
-                    <Detail label="Couleur du badge attribué" value={visit.badge_color ?? '—'} />
+                    <Detail label="Couleur du badge attribué" value={badgeColorLabel} />
                 </dl>
+
+                {visit.is_event && (
+                    <div>
+                        <h2 className="mb-1 text-sm font-medium">Participants de l'événement</h2>
+                        {visit.event_visitors && visit.event_visitors.length > 0 ? (
+                            <ul className="list-inside list-disc text-sm text-muted-foreground">
+                                {visit.event_visitors.map((name, index) => (
+                                    <li key={`${name}-${index}`}>{name}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Aucun participant renseigné.</p>
+                        )}
+                    </div>
+                )}
 
                 <div>
                     <h2 className="mb-1 text-sm font-medium">Motif de la visite</h2>
@@ -97,5 +120,23 @@ function Detail({ label, value }: { label: string; value: string }) {
             <dd className="text-sm">{value}</dd>
         </div>
     );
+}
+
+function badgeColorByVisitorType(visitorType: string): string {
+    const type = visitorType.toLowerCase();
+
+    if (type === 'visiteur') {
+        return 'Badge bleu';
+    }
+
+    if (type === 'prestataire') {
+        return 'Badge jaune';
+    }
+
+    if (type === 'fournisseur') {
+        return 'Badge rouge';
+    }
+
+    return '—';
 }
 
