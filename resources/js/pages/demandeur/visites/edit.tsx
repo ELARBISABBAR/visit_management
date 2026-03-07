@@ -76,9 +76,10 @@ export default function EditVisit({ visit, departments }: EditVisitPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Modifier la visite" />
+            <div className="p-5">
             <form
                 onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <h1 className="text-lg font-semibold">Modifier la visite</h1>
 
@@ -269,6 +270,7 @@ export default function EditVisit({ visit, departments }: EditVisitPageProps) {
                     </button>
                 </div>
             </form>
+            </div>
         </AppLayout>
     );
 }

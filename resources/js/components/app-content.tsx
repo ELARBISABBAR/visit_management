@@ -7,7 +7,11 @@ type Props = React.ComponentProps<'main'> & {
 
 export function AppContent({ variant = 'header', children, ...props }: Props) {
     if (variant === 'sidebar') {
-        return <SidebarInset {...props}>{children}</SidebarInset>;
+        return (
+            <SidebarInset className="bg-[#F8FAFC]" {...props}>
+                {children}
+            </SidebarInset>
+        );
     }
 
     return (

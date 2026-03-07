@@ -50,9 +50,10 @@ export default function EditBadge({ badge }: EditBadgePageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Edit badge" />
+            <div className="p-5">
             <form
                 onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <div className="grid gap-4 md:grid-cols-2">
                     <Field
@@ -104,6 +105,7 @@ export default function EditBadge({ badge }: EditBadgePageProps) {
                     Save changes
                 </button>
             </form>
+            </div>
         </AppLayout>
     );
 }

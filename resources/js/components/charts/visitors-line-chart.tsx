@@ -6,9 +6,10 @@ import {
     LineElement,
     LinearScale,
     PointElement,
-    Tooltip,
-    type ChartOptions,
+    Tooltip
+    
 } from 'chart.js';
+import type {ChartOptions} from 'chart.js';
 import type { ReactNode } from 'react';
 import { Line } from 'react-chartjs-2';
 
@@ -33,10 +34,10 @@ export function VisitorsLineChart({
             {
                 label: 'Visiteurs',
                 data,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                pointBackgroundColor: '#2563eb',
-                pointBorderColor: '#2563eb',
+                borderColor: '#F4B400',
+                backgroundColor: 'rgba(244, 180, 0, 0.16)',
+                pointBackgroundColor: '#D99A00',
+                pointBorderColor: '#D99A00',
                 tension: 0.3,
                 fill: true,
             },
@@ -59,17 +60,29 @@ export function VisitorsLineChart({
         scales: {
             y: {
                 beginAtZero: true,
+                grid: {
+                    color: '#E5E7EB',
+                },
                 ticks: {
                     precision: 0,
+                    color: '#6B7280',
+                },
+            },
+            x: {
+                grid: {
+                    color: '#F3F4F6',
+                },
+                ticks: {
+                    color: '#6B7280',
                 },
             },
         },
     };
 
     return (
-        <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
+        <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold">{title}</h2>
+                <h2 className="text-lg font-semibold text-[#111827]">{title}</h2>
                 {actions}
             </div>
             <div className="h-72">

@@ -45,9 +45,10 @@ export default function CreateUser({ roles }: CreateUserPageProps) {
             ]}
         >
             <Head title="Create user" />
+            <div className="p-5">
             <form
                 onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <div className="grid gap-4 md:grid-cols-2">
                     <Field
@@ -104,6 +105,7 @@ export default function CreateUser({ roles }: CreateUserPageProps) {
                     Create user
                 </button>
             </form>
+            </div>
         </AppLayout>
     );
 }

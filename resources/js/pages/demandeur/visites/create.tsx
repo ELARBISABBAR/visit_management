@@ -58,9 +58,10 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Planifier une visite" />
+            <div className="p-5">
             <form
                 onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <h1 className="text-lg font-semibold">Planifier une visite</h1>
 
@@ -251,6 +252,7 @@ export default function CreateVisit({ departments }: CreateVisitPageProps) {
                     </button>
                 </div>
             </form>
+            </div>
         </AppLayout>
     );
 }

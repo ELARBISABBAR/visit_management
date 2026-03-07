@@ -9,18 +9,47 @@ use App\Http\Controllers\Accueil\DashboardController as AccueilDashboardControll
 use App\Http\Controllers\Accueil\VisitController as AccueilVisitController;
 use App\Http\Controllers\Demandeur\DashboardController as DemandeurDashboardController;
 use App\Http\Controllers\Demandeur\VisitController as DemandeurVisitController;
+use App\Enums\Role;
 use App\Http\Middleware\AccueilMiddleware;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\DemandeurMiddleware;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use Inertia\Inertia;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function (Request $request) {
+    $user = $request->user();
+
+    if ($user) {
+        $dashboardPath = match ($user->role) {
+            Role::ADMIN => '/admin',
+            Role::ACCUEIL => '/accueil/dashboard',
+            Role::DEMANDEUR => '/demandeur/dashboard',
+            default => '/login',
+        };
+
+        return redirect()->to($dashboardPath);
+    }
+
+    return Inertia::render('auth/login', [
+        'canResetPassword' => Features::enabled(Features::resetPasswords()),
+        'canRegister' => false,
+        'status' => $request->session()->get('status'),
+    ]);
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('tableau-de-bord', function (Request $request) {
+        $dashboardPath = match ($request->user()->role) {
+            Role::ADMIN => '/admin',
+            Role::ACCUEIL => '/accueil/dashboard',
+            Role::DEMANDEUR => '/demandeur/dashboard',
+            default => '/login',
+        };
+
+        return redirect()->to($dashboardPath);
+    })->name('tableau-de-bord');
 
     Route::prefix('demandeur')
         ->name('demandeur.')

@@ -10,16 +10,14 @@ import {
     UserCircle2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import AppLayout from '@/layouts/app-layout';
 import { PaginationControls } from '@/components/pagination-controls';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
+import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { VisitorTypeBadge } from '@/components/ui/visitor-type-badge';
+import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitRow = {
@@ -94,37 +92,36 @@ export default function AccueilVisitsIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestion des visites" />
 
-            <div className="space-y-4">
+            <div className="space-y-4 p-4 md:p-6">
                 <div className="flex justify-end">
                     <Link
                         href="/accueil/visites/nouvelle"
-                        className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                        className="inline-flex items-center rounded-lg bg-[#F4B400] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#D99A00]"
                     >
                         Nouvelle visite
                     </Link>
                 </div>
 
-                <div className="grid gap-4 rounded-xl border border-sidebar-border/70 bg-background p-4 md:grid-cols-4 dark:border-sidebar-border">
+                <div className="grid gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm md:grid-cols-4">
                     <div className="flex flex-col space-y-1">
-                        <label htmlFor="filter-date" className="text-sm font-medium">
+                        <label htmlFor="filter-date" className="text-sm font-medium text-[#374151]">
                             Filtrer par date
                         </label>
-                        <input
+                        <Input
                             id="filter-date"
                             type="date"
-                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                             value={filters.date ?? ''}
                             onChange={(e) => updateFilter('date', e.target.value)}
                         />
                     </div>
 
                     <div className="flex flex-col space-y-1">
-                        <label htmlFor="filter-department" className="text-sm font-medium">
+                        <label htmlFor="filter-department" className="text-sm font-medium text-[#374151]">
                             Filtrer par département
                         </label>
                         <select
                             id="filter-department"
-                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            className="h-10 rounded-lg border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#F4B400]/40"
                             value={filters.department_id ?? ''}
                             onChange={(e) => updateFilter('department_id', e.target.value)}
                         >
@@ -138,12 +135,12 @@ export default function AccueilVisitsIndex({
                     </div>
 
                     <div className="flex flex-col space-y-1">
-                        <label htmlFor="filter-status" className="text-sm font-medium">
+                        <label htmlFor="filter-status" className="text-sm font-medium text-[#374151]">
                             Filtrer par statut
                         </label>
                         <select
                             id="filter-status"
-                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            className="h-10 rounded-lg border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#F4B400]/40"
                             value={filters.status ?? ''}
                             onChange={(e) => updateFilter('status', e.target.value)}
                         >
@@ -157,61 +154,59 @@ export default function AccueilVisitsIndex({
                     </div>
 
                     <div className="flex flex-col space-y-1">
-                        <label htmlFor="filter-search" className="text-sm font-medium">
+                        <label htmlFor="filter-search" className="text-sm font-medium text-[#374151]">
                             Rechercher par nom du visiteur
                         </label>
-                        <input
+                        <Input
                             id="filter-search"
                             type="text"
-                            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                             defaultValue={filters.search ?? ''}
                             onBlur={(e) => updateFilter('search', e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-                    <h1 className="mb-4 text-lg font-semibold">Gestion des visites</h1>
-                    <table className="min-w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="py-2 pr-4">#</th>
-                                <th className="py-2 pr-4">Nom du visiteur</th>
-                                <th className="py-2 pr-4">Type de visiteur</th>
-                                <th className="py-2 pr-4">Société</th>
-                                <th className="py-2 pr-4">Demandeur (hôte)</th>
-                                <th className="py-2 pr-4">Département</th>
-                                <th className="py-2 pr-4">Date et heure de visite</th>
-                                <th className="py-2 pr-4">Statut de la visite</th>
-                                <th className="py-2 pr-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {visits.data.map((visit, index) => (
-                                <tr key={visit.id} className="border-b last:border-b-0">
-                                    <td className="py-2 pr-4 text-muted-foreground">{index + 1}</td>
-                                    <td className="py-2 pr-4">
-                                        {visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
-                                    </td>
-                                    <td className="py-2 pr-4">{visit.visitor_type}</td>
-                                    <td className="py-2 pr-4">{visit.company ?? '—'}</td>
-                                    <td className="py-2 pr-4">{visit.demandeur ?? '—'}</td>
-                                    <td className="py-2 pr-4">{visit.department ?? '—'}</td>
-                                    <td className="py-2 pr-4">{visit.scheduled_at ?? '—'}</td>
-                                    <td className="py-2 pr-4">{visit.status_label ?? '—'}</td>
-                                    <td className="py-2 pr-4 text-right space-x-2">
-                                        <Link
-                                            href={`/accueil/visites/${visit.id}`}
-                                            className="rounded-md border px-2 py-1 text-xs"
-                                        >
-                                            Voir la visite
-                                        </Link>
+                <div className="space-y-4">
+                    <DataTable
+                        headers={[
+                            '#',
+                            'Visitor',
+                            'Type',
+                            'Company',
+                            'Host',
+                            'Department',
+                            'Arrival',
+                            'Status',
+                            'Actions',
+                        ]}
+                    >
+                        {visits.data.map((visit, index) => (
+                            <DataTableRow key={visit.id}>
+                                <DataTableCell className="text-[#6B7280]">{index + 1}</DataTableCell>
+                                <DataTableCell className="font-medium">
+                                    {visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
+                                </DataTableCell>
+                                <DataTableCell>
+                                    <VisitorTypeBadge type={visit.visitor_type} />
+                                </DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.company ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.demandeur ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.department ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.scheduled_at ?? '—'}</DataTableCell>
+                                <DataTableCell>
+                                    <StatusBadge status={visit.status} label={visit.status_label} />
+                                </DataTableCell>
+                                <DataTableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/accueil/visites/${visit.id}`}>Voir</Link>
+                                        </Button>
                                         <VisitPreviewModal visit={visit} />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </DataTableCell>
+                            </DataTableRow>
+                        ))}
+                    </DataTable>
                     <PaginationControls pagination={visits} />
                 </div>
             </div>
@@ -223,43 +218,40 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
     const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
+        <Modal
+            trigger={
                 <button
                     type="button"
-                    className="inline-flex items-center rounded-md border px-2 py-1 text-xs"
+                    className="inline-flex items-center rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-xs text-[#374151] hover:bg-[#F3F4F6]"
                     aria-label="Aperçu de la visite"
                     title="Aperçu rapide"
                 >
                     <Eye className="size-4" />
                 </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>Voir la visite</DialogTitle>
-                    <DialogDescription>
-                        Informations complètes de la visite sélectionnée.
-                    </DialogDescription>
-                </DialogHeader>
-
+            }
+            title="Voir la visite"
+            description="Informations complètes de la visite sélectionnée."
+        >
                 <div className="space-y-4">
-                    <div className="flex items-start gap-3 rounded-lg border p-3">
-                        <UserCircle2 className="mt-1 size-10 text-muted-foreground" />
+                    <div className="flex items-start gap-3 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+                        <UserCircle2 className="mt-1 size-10 text-[#6B7280]" />
                         <div>
-                            <h3 className="text-2xl font-semibold">
+                            <h3 className="text-2xl font-semibold text-[#111827]">
                                 {visit.is_event ? visit.event_name ?? visit.visitor_name : visit.visitor_name}
                             </h3>
-                            <p className="text-sm text-muted-foreground">Type de visiteur</p>
-                            <p className="text-base font-medium">{visit.visitor_type}</p>
-                            <p className="mt-2 text-sm text-muted-foreground">Son entreprise</p>
-                            <p className="text-base">{visit.company ?? '—'}</p>
+                            <p className="text-sm text-[#6B7280]">Type de visiteur</p>
+                            <div className="mt-1">
+                                <VisitorTypeBadge type={visit.visitor_type} />
+                            </div>
+                            <p className="mt-2 text-sm text-[#6B7280]">Son entreprise</p>
+                            <p className="text-base text-[#111827]">{visit.company ?? '—'}</p>
                         </div>
                     </div>
 
                     {visit.is_event && (
                         <div className="space-y-2 border-t pt-3">
-                            <p className="text-sm font-medium">Participants de l'événement</p>
-                            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+                            <p className="text-sm font-medium text-[#374151]">Participants de l'événement</p>
+                            <div className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm">
                                 {visit.event_visitors && visit.event_visitors.length > 0 ? (
                                     <ul className="list-inside list-disc">
                                         {visit.event_visitors.map((name, index) => (
@@ -294,9 +286,7 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                             value={visit.scheduled_at ?? '—'}
                         />
                         <div className="flex items-center justify-end">
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
-                                {visit.status_label ?? '—'}
-                            </span>
+                            <StatusBadge status={visit.status} label={visit.status_label} />
                         </div>
                     </div>
 
@@ -319,14 +309,13 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                     </div>
 
                     <div className="space-y-2 border-t pt-3">
-                        <p className="text-sm font-medium">Motif de la visite</p>
-                        <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+                        <p className="text-sm font-medium text-[#374151]">Motif de la visite</p>
+                        <div className="rounded-md border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm">
                             {visit.reason || '—'}
                         </div>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+        </Modal>
     );
 }
 
@@ -340,12 +329,12 @@ function InfoItem({
     value: string;
 }) {
     return (
-        <div className="rounded-md border p-2">
-            <p className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="rounded-md border border-[#E5E7EB] bg-white p-2">
+            <p className="mb-1 flex items-center gap-2 text-sm text-[#6B7280]">
                 {icon}
                 {label}
             </p>
-            <p className="text-base font-medium">{value}</p>
+            <p className="text-base font-medium text-[#111827]">{value}</p>
         </div>
     );
 }

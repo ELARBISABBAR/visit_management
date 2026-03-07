@@ -1,6 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
 import { PaginationControls } from '@/components/pagination-controls';
+import { Button } from '@/components/ui/button';
+import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
+import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -39,59 +42,37 @@ export default function VisitsIndex({ visits }: VisitsIndexProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mes visites" />
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex justify-end px-4 pt-4 md:px-6">
                 <Link
                     href="/demandeur/visites/nouvelle"
-                    className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                    className="inline-flex items-center rounded-lg bg-[#F4B400] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#D99A00]"
                 >
                     Nouvelle visite
                 </Link>
             </div>
-            <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-                <table className="min-w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="py-2 pr-4">Nom du visiteur</th>
-                            <th className="py-2 pr-4">Société</th>
-                            <th className="py-2 pr-4">Département</th>
-                            <th className="py-2 pr-4">Date / heure</th>
-                            <th className="py-2 pr-4">Statut</th>
-                            <th className="py-2 pr-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {visits.data.length === 0 ? (
-                            <tr>
-                                <td
-                                    colSpan={6}
-                                    className="py-4 text-center text-sm text-muted-foreground"
-                                >
-                                    Aucune visite trouvée.
-                                </td>
-                            </tr>
-                        ) : (
-                            visits.data.map((visit) => (
-                                <tr key={visit.id} className="border-b last:border-b-0">
-                                    <td className="py-2 pr-4">{visit.visitor_name}</td>
-                                    <td className="py-2 pr-4 text-muted-foreground">
-                                        {visit.company ?? '—'}
-                                    </td>
-                                    <td className="py-2 pr-4 text-muted-foreground">
-                                        {visit.department ?? '—'}
-                                    </td>
-                                    <td className="py-2 pr-4 text-muted-foreground">
-                                        {visit.scheduled_at ?? '—'}
-                                    </td>
-                                    <td className="py-2 pr-4 text-muted-foreground">
-                                        {visit.status_label ?? '—'}
-                                    </td>
-                                    <td className="py-2 pr-4 text-right space-x-2">
-                                        <Link
-                                            href={`/demandeur/visites/${visit.id}`}
-                                            className="rounded-md border px-2 py-1 text-xs"
-                                        >
-                                            Détails
-                                        </Link>
+            <div className="space-y-4 px-4 pb-4 md:px-6 md:pb-6">
+                <DataTable headers={['Visitor', 'Company', 'Department', 'Arrival', 'Status', 'Actions']}>
+                    {visits.data.length === 0 ? (
+                        <DataTableRow>
+                            <DataTableCell colSpan={6} className="py-6 text-center text-[#6B7280]">
+                                Aucune visite trouvée.
+                            </DataTableCell>
+                        </DataTableRow>
+                    ) : (
+                        visits.data.map((visit) => (
+                            <DataTableRow key={visit.id}>
+                                <DataTableCell className="font-medium">{visit.visitor_name}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.company ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.department ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{visit.scheduled_at ?? '—'}</DataTableCell>
+                                <DataTableCell>
+                                    <StatusBadge status={visit.status} label={visit.status_label} />
+                                </DataTableCell>
+                                <DataTableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/demandeur/visites/${visit.id}`}>Détails</Link>
+                                        </Button>
                                         {visit.status === 'planned' && (
                                             <ActionConfirmDialog
                                                 triggerLabel="Annuler"
@@ -105,16 +86,16 @@ export default function VisitsIndex({ visits }: VisitsIndexProps) {
                                                         { preserveScroll: true },
                                                     )
                                                 }
-                                                triggerClassName="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
-                                                confirmClassName="inline-flex items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                                                triggerClassName="inline-flex items-center rounded-lg bg-[#EF4444] px-3 py-2 text-xs font-medium text-white hover:bg-red-500"
+                                                confirmClassName="inline-flex items-center rounded-lg bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
                                             />
                                         )}
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+                                </DataTableCell>
+                            </DataTableRow>
+                        ))
+                    )}
+                </DataTable>
                 <PaginationControls pagination={visits} />
             </div>
         </AppLayout>

@@ -1,5 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { PaginationControls } from '@/components/pagination-controls';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -40,53 +43,43 @@ export default function DepartmentsIndex({ departments }: DepartmentsPageProps) 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Departments" />
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex justify-end px-4 pt-4 md:px-6">
                 <Link
                     href="/admin/departments/create"
-                    className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                    className="inline-flex items-center rounded-lg bg-[#F4B400] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#D99A00]"
                 >
                     Create department
                 </Link>
             </div>
-            <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-                <table className="min-w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="py-2 pr-4">Name</th>
-                            <th className="py-2 pr-4">Description</th>
-                            <th className="py-2 pr-4">Status</th>
-                            <th className="py-2 pr-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {departments.data.map((department) => (
-                            <tr key={department.id} className="border-b last:border-b-0">
-                                <td className="py-2 pr-4">{department.name}</td>
-                                <td className="py-2 pr-4 text-muted-foreground">
-                                    {department.description ?? '—'}
-                                </td>
-                                <td className="py-2 pr-4">
+            <div className="space-y-4 px-4 pb-4 md:px-6 md:pb-6">
+                <DataTable headers={['Name', 'Description', 'Status', 'Actions']}>
+                    {departments.data.map((department) => (
+                        <DataTableRow key={department.id}>
+                            <DataTableCell className="font-medium">{department.name}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{department.description ?? '—'}</DataTableCell>
+                            <DataTableCell>
+                                <Badge className={department.is_active ? 'border-[#86EFAC] bg-[#F0FDF4] text-[#15803D]' : 'border-[#D1D5DB] bg-[#F9FAFB] text-[#4B5563]'}>
                                     {department.is_active ? 'Active' : 'Inactive'}
-                                </td>
-                                <td className="py-2 pr-4 text-right space-x-2">
-                                    <Link
-                                        href={`/admin/departments/${department.id}/edit`}
-                                        className="rounded-md border px-2 py-1 text-xs"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
+                                </Badge>
+                            </DataTableCell>
+                            <DataTableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={`/admin/departments/${department.id}/edit`}>Edit</Link>
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="destructive"
+                                        size="sm"
                                         onClick={() => handleDelete(department.id)}
-                                        className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
                                     >
                                         Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </Button>
+                                </div>
+                            </DataTableCell>
+                        </DataTableRow>
+                    ))}
+                </DataTable>
                 <PaginationControls pagination={departments} />
             </div>
         </AppLayout>

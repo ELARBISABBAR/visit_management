@@ -1,6 +1,10 @@
 import { Head, router } from '@inertiajs/react';
+import { Building2, CalendarDays, Clock3, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { VisitorsLineChart } from '@/components/charts/visitors-line-chart';
+import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
+import { StatCard } from '@/components/ui/stat-card';
+import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -11,6 +15,7 @@ type VisitRow = {
     department?: string | null;
     demandeur?: string | null;
     scheduled_at?: string | null;
+    status?: string | null;
     status_label?: string | null;
     badge_color?: string | null;
 };
@@ -79,110 +84,109 @@ export default function AccueilDashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tableau de bord – Accueil" />
-            <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-4">
-                    <StatCard label="Visites prévues aujourd'hui" value={stats.planned_today} />
-                    <StatCard
-                        label="Visiteurs présents dans le bâtiment"
-                        value={stats.present_now}
-                    />
-                    <StatCard label="Visites terminées aujourd'hui" value={stats.completed_today} />
-                    <StatCard label="Visites annulées" value={stats.cancelled_today} />
-                </div>
+            <div className="space-y-6 p-4 md:p-6">
+                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <StatCard title="Total Visits" value={stats.planned_today} icon={CalendarDays} trend="Scheduled for today" />
+                    <StatCard title="Visitors Today" value={todayVisits.length} icon={Users} trend="Arrivals expected today" />
+                    <StatCard title="Visitors Inside" value={stats.present_now} icon={Building2} trend="Currently in the building" />
+                    <StatCard title="Departments" value={stats.completed_today} icon={Clock3} trend="Completed visits today" />
+                </section>
 
-                <DashboardTable title="Visites d'aujourd'hui" rows={todayVisits} />
-                <DashboardTable title="Visiteurs actuellement présents" rows={presentVisitors} />
+                <section className="grid gap-6 lg:grid-cols-2">
+                    <div>
+                        <VisitorsLineChart
+                            labels={visitorChart.labels}
+                            data={visitorChart.data}
+                            title="Total des visiteurs par jour"
+                            actions={
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                        className="rounded-lg border border-input bg-white px-3 py-2 text-xs"
+                                        value={chartFilters.mode}
+                                        onChange={(e) =>
+                                            updateChartFilters({
+                                                mode: e.target.value as 'month' | 'custom',
+                                            })
+                                        }
+                                    >
+                                        <option value="month">Par mois</option>
+                                        <option value="custom">Période personnalisée</option>
+                                    </select>
+
+                                    {chartFilters.mode === 'month' ? (
+                                        <input
+                                            type="month"
+                                            className="rounded-lg border border-input bg-white px-3 py-2 text-xs"
+                                            value={chartFilters.month}
+                                            onChange={(e) => updateChartFilters({ month: e.target.value })}
+                                        />
+                                    ) : (
+                                        <>
+                                            <input
+                                                type="date"
+                                                className="rounded-lg border border-input bg-white px-3 py-2 text-xs"
+                                                value={chartFilters.date_from}
+                                                onChange={(e) =>
+                                                    updateChartFilters({
+                                                        date_from: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                            <input
+                                                type="date"
+                                                className="rounded-lg border border-input bg-white px-3 py-2 text-xs"
+                                                value={chartFilters.date_to}
+                                                onChange={(e) =>
+                                                    updateChartFilters({
+                                                        date_to: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            }
+                        />
+                    </div>
+
+                    <div className="space-y-5">
+                        <DashboardTable title="Visites d'aujourd'hui" rows={todayVisits} />
+                        <DashboardTable title="Visiteurs actuellement présents" rows={presentVisitors} />
+                    </div>
+
+                </section>
+
                 <DashboardTable title="Dernières visites" rows={latestVisits} />
-                <VisitorsLineChart
-                    labels={visitorChart.labels}
-                    data={visitorChart.data}
-                    title="Total des visiteurs par jour"
-                    actions={
-                        <div className="flex flex-wrap items-center gap-2">
-                            <select
-                                className="rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                value={chartFilters.mode}
-                                onChange={(e) =>
-                                    updateChartFilters({
-                                        mode: e.target.value as 'month' | 'custom',
-                                    })
-                                }
-                            >
-                                <option value="month">Par mois</option>
-                                <option value="custom">Période personnalisée</option>
-                            </select>
 
-                            {chartFilters.mode === 'month' ? (
-                                <input
-                                    type="month"
-                                    className="rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                    value={chartFilters.month}
-                                    onChange={(e) => updateChartFilters({ month: e.target.value })}
-                                />
-                            ) : (
-                                <>
-                                    <input
-                                        type="date"
-                                        className="rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                        value={chartFilters.date_from}
-                                        onChange={(e) =>
-                                            updateChartFilters({
-                                                date_from: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <input
-                                        type="date"
-                                        className="rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                        value={chartFilters.date_to}
-                                        onChange={(e) =>
-                                            updateChartFilters({
-                                                date_to: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </>
-                            )}
-                        </div>
-                    }
-                />
+
             </div>
         </AppLayout>
     );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
-    return (
-        <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-2 text-2xl font-semibold">{value}</p>
-        </div>
-    );
-}
-
 function DashboardTable({ title, rows }: { title: string; rows: VisitRow[] }) {
     return (
-        <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-            <h2 className="mb-3 text-lg font-semibold">{title}</h2>
+        <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-[#111827]">{title}</h2>
             {rows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune donnée disponible.</p>
+                <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 text-sm text-[#6B7280] shadow-sm">
+                    Aucune donnée disponible.
+                </div>
             ) : (
-                <ul className="space-y-2 text-sm">
+                <DataTable headers={['Visitor', 'Company', 'Department', 'Host', 'Arrival', 'Status']}>
                     {rows.map((row) => (
-                        <li key={row.id} className="flex items-center justify-between rounded-md border p-2">
-                            <div>
-                                <p className="font-medium">{row.visitor_name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {row.company ?? '—'} • {row.demandeur ?? '—'} • {row.department ?? '—'}
-                                </p>
-                            </div>
-                            <div className="text-right text-xs text-muted-foreground">
-                                <p>{row.scheduled_at ?? '—'}</p>
-                                <p>{row.status_label ?? '—'}</p>
-                            </div>
-                        </li>
+                        <DataTableRow key={row.id}>
+                            <DataTableCell className="font-medium">{row.visitor_name}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{row.company ?? '-'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{row.department ?? '-'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{row.demandeur ?? '-'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{row.scheduled_at ?? '-'}</DataTableCell>
+                            <DataTableCell>
+                                <StatusBadge status={row.status} label={row.status_label} />
+                            </DataTableCell>
+                        </DataTableRow>
                     ))}
-                </ul>
+                </DataTable>
             )}
         </div>
     );

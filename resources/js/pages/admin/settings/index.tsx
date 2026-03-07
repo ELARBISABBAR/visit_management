@@ -54,9 +54,10 @@ export default function SettingsIndex({ emailSettings }: SettingsPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Admin settings" />
-            <form
+           <div className="p-5">
+           <form
                 onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <div className="grid gap-4 md:grid-cols-2">
                     <TextField
@@ -125,7 +126,7 @@ export default function SettingsIndex({ emailSettings }: SettingsPageProps) {
 
             <form
                 onSubmit={handleTestSmtp}
-                className="mt-4 space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                className="mt-4 space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border"
             >
                 <h2 className="text-base font-semibold">Tester la configuration SMTP</h2>
                 <TextField
@@ -144,6 +145,7 @@ export default function SettingsIndex({ emailSettings }: SettingsPageProps) {
                     Tester SMTP
                 </button>
             </form>
+           </div>
         </AppLayout>
     );
 }

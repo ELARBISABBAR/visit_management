@@ -1,16 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import {
-    BookOpen,
-    Building2,
-    FolderGit2,
-    IdCard,
-    LayoutGrid,
-    Settings2,
-    Users,
-} from 'lucide-react';
+import { Building2, IdCard, LayoutGrid, Settings2, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
@@ -21,23 +11,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import { cn } from '@/lib/utils';
 import type { Auth, NavItem } from '@/types';
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+import AppLogoIcon from './app-logo-icon';
 
 export function AppSidebar() {
     const { props } = usePage<{ auth: Auth }>();
+    const { isCurrentOrParentUrl } = useCurrentUrl();
     const userRole = (props.auth?.user as any)?.role as string | undefined;
     const roleHomeLink =
         userRole === 'admin'
@@ -52,7 +33,7 @@ export function AppSidebar() {
         ...(userRole === 'admin'
             ? ([
                   {
-                      title: 'Tableau de bord – Admin',
+                      title: 'Dashboard',
                       href: '/admin',
                       icon: LayoutGrid,
                   },
@@ -81,31 +62,26 @@ export function AppSidebar() {
         ...(userRole === 'demandeur'
             ? ([
                   {
-                      title: 'Tableau de bord – Demandeur',
+                      title: 'Dashboard',
                       href: '/demandeur/dashboard',
                       icon: LayoutGrid,
                   },
                   {
-                      title: 'Mes visites',
+                      title: 'Visits',
                       href: '/demandeur/visites',
                       icon: IdCard,
-                  },
-                  {
-                      title: 'Historique des visites',
-                      href: '/demandeur/visites/historique',
-                      icon: FolderGit2,
                   },
               ] as NavItem[])
             : []),
         ...(userRole === 'accueil'
             ? ([
                   {
-                      title: 'Tableau de bord – Accueil',
+                      title: 'Dashboard',
                       href: '/accueil/dashboard',
                       icon: LayoutGrid,
                   },
                   {
-                      title: 'Gestion des visites',
+                      title: 'Visits',
                       href: '/accueil/visites',
                       icon: IdCard,
                   },
@@ -114,25 +90,51 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+        <Sidebar collapsible="icon" variant="sidebar" className="border-r border-[#374151]">
+            <SidebarHeader className="px-4 py-5">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton size="lg" asChild className="hover:bg-transparent data-[active=true]:bg-transparent">
                             <Link href={roleHomeLink} prefetch>
-                                <AppLogo />
+                                <div className="w-25 mx-auto">
+                                    <AppLogoIcon />
+                                </div>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
+            <SidebarContent className="px-3 pb-4">
+                <p className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+                    Main menu
+                </p>
+                <SidebarMenu className="gap-1.5">
+                    {mainNavItems.map((item) => {
+                        const active = isCurrentOrParentUrl(item.href);
+                        return (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={active}
+                                    tooltip={{ children: item.title }}
+                                    className={cn(
+                                        'h-10 rounded-lg px-3 text-[#D1D5DB] transition-all duration-200 hover:bg-[#374151] hover:text-white',
+                                        active && 'bg-[#F4B400] font-semibold text-[#111827] hover:bg-[#D99A00]',
+                                    )}
+                                >
+                                    <Link href={item.href} prefetch>
+                                        {item.icon && <item.icon className="size-4" />}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        );
+                    })}
+                </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+            <SidebarFooter className="border-t border-[#374151] px-3 py-3">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

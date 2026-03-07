@@ -1,5 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { PaginationControls } from '@/components/pagination-controls';
+import { Button } from '@/components/ui/button';
+import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { VisitorTypeBadge } from '@/components/ui/visitor-type-badge';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -41,53 +45,44 @@ export default function BadgesIndex({ badges }: BadgesPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Badges" />
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex justify-end px-4 pt-4 md:px-6">
                 <Link
                     href="/admin/badges/create"
-                    className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                    className="inline-flex items-center rounded-lg bg-[#F4B400] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#D99A00]"
                 >
                     Create badge
                 </Link>
             </div>
-            <div className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
-                <table className="min-w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="py-2 pr-4">Code (couleur du badge)</th>
-                            <th className="py-2 pr-4">Label</th>
-                            <th className="py-2 pr-4">Type de visiteur</th>
-                            <th className="py-2 pr-4">Status</th>
-                            <th className="py-2 pr-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {badges.data.map((badge) => (
-                            <tr key={badge.id} className="border-b last:border-b-0">
-                                <td className="py-2 pr-4">{badge.code}</td>
-                                <td className="py-2 pr-4 text-muted-foreground">
-                                    {badge.label ?? '—'}
-                                </td>
-                                <td className="py-2 pr-4">{badge.visitor_type}</td>
-                                <td className="py-2 pr-4">{badge.visitor_type}</td>
-                                <td className="py-2 pr-4 text-right space-x-2">
-                                    <Link
-                                        href={`/admin/badges/${badge.id}/edit`}
-                                        className="rounded-md border px-2 py-1 text-xs"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
+            <div className="space-y-4 px-4 pb-4 md:px-6 md:pb-6">
+                <DataTable headers={['Badge', 'Label', 'Visitor type', 'Status', 'Actions']}>
+                    {badges.data.map((badge) => (
+                        <DataTableRow key={badge.id}>
+                            <DataTableCell className="font-medium">{badge.code}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{badge.label ?? '—'}</DataTableCell>
+                            <DataTableCell>
+                                <VisitorTypeBadge type={badge.visitor_type} />
+                            </DataTableCell>
+                            <DataTableCell>
+                                <StatusBadge status={badge.status} label={badge.status} />
+                            </DataTableCell>
+                            <DataTableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={`/admin/badges/${badge.id}/edit`}>Edit</Link>
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="destructive"
+                                        size="sm"
                                         onClick={() => handleDelete(badge.id)}
-                                        className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
                                     >
                                         Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </Button>
+                                </div>
+                            </DataTableCell>
+                        </DataTableRow>
+                    ))}
+                </DataTable>
                 <PaginationControls pagination={badges} />
             </div>
         </AppLayout>

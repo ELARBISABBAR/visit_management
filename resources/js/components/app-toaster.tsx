@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 type ToastItem = {
     id: number;

@@ -48,7 +48,8 @@ export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps)
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Détails de la visite" />
-            <div className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
+            <div className="p-5">
+            <div className="space-y-4 rounded-xl border bg-background p-4 dark:border-sidebar-border">
                 <h1 className="text-lg font-semibold">Détails de la visite</h1>
 
                 <dl className="grid gap-4 md:grid-cols-2">
@@ -108,6 +109,7 @@ export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps)
                         />
                     )}
                 </div>
+            </div>
             </div>
         </AppLayout>
     );
