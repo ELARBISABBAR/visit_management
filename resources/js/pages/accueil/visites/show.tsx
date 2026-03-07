@@ -1,0 +1,109 @@
+import { Head, Link, router } from '@inertiajs/react';
+import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
+
+type VisitDetails = {
+    id: number;
+    visitor_name: string;
+    visitor_type: string;
+    company?: string | null;
+    demandeur?: string | null;
+    department?: string | null;
+    scheduled_at?: string | null;
+    status_label?: string | null;
+    reason?: string | null;
+    badge_color?: string | null;
+    arrival_at?: string | null;
+    departure_at?: string | null;
+    time_with_demandeur?: string | null;
+};
+
+type VisitShowProps = {
+    visit: VisitDetails;
+};
+
+export default function AccueilVisitShow({ visit }: VisitShowProps) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Tableau de bord – Accueil', href: '/accueil/dashboard' },
+        { title: 'Gestion des visites', href: '/accueil/visites' },
+        { title: 'Voir la visite', href: `/accueil/visites/${visit.id}` },
+    ];
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Voir la visite" />
+            <div className="space-y-4 rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
+                <h1 className="text-lg font-semibold">Voir la visite</h1>
+                <dl className="grid gap-4 md:grid-cols-2">
+                    <Detail label="Nom du visiteur" value={visit.visitor_name} />
+                    <Detail label="Type de visiteur" value={visit.visitor_type} />
+                    <Detail label="Société" value={visit.company ?? '—'} />
+                    <Detail label="Demandeur (hôte)" value={visit.demandeur ?? '—'} />
+                    <Detail label="Département" value={visit.department ?? '—'} />
+                    <Detail label="Date et heure de visite" value={visit.scheduled_at ?? '—'} />
+                    <Detail label="Statut de la visite" value={visit.status_label ?? '—'} />
+                    <Detail label="Heure d'arrivée" value={visit.arrival_at ?? '—'} />
+                    <Detail label="Heure de départ" value={visit.departure_at ?? '—'} />
+                    <Detail
+                        label="Temps passé avec le demandeur"
+                        value={visit.time_with_demandeur ?? '—'}
+                    />
+                </dl>
+                <div>
+                    <p className="text-sm font-medium">Motif de la visite</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                        {visit.reason || '—'}
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    <Link
+                        href={`/accueil/visites/${visit.id}/modifier`}
+                        className="rounded-md border px-3 py-2 text-sm"
+                    >
+                        Modifier la visite
+                    </Link>
+                    <ActionConfirmDialog
+                        triggerLabel="Annuler la visite"
+                        title="Confirmer l'annulation"
+                        description="Voulez-vous vraiment annuler cette visite ?"
+                        confirmLabel="Oui, annuler"
+                        onConfirm={() => router.post(`/accueil/visites/${visit.id}/annuler`)}
+                        triggerClassName="rounded-md border border-destructive px-3 py-2 text-sm text-destructive"
+                        confirmClassName="inline-flex text-white items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                    />
+                    <ActionConfirmDialog
+                        triggerLabel="Enregistrer l'arrivée"
+                        title="Confirmer l'arrivée"
+                        description="Confirmer l'enregistrement de l'arrivée du visiteur ?"
+                        confirmLabel="Oui, enregistrer"
+                        onConfirm={() => router.post(`/accueil/visites/${visit.id}/arrivee`)}
+                        triggerClassName="rounded-md border px-3 py-2 text-sm"
+                    />
+                    <ActionConfirmDialog
+                        triggerLabel="Clôturer la visite"
+                        title="Confirmer la clôture"
+                        description="Confirmer la clôture de la visite et le retour du badge ?"
+                        confirmLabel="Oui, clôturer"
+                        onConfirm={() =>
+                            router.post(`/accueil/visites/${visit.id}/cloturer`, {
+                                badge_returned: true,
+                            })
+                        }
+                        triggerClassName="rounded-md border px-3 py-2 text-sm"
+                    />
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <dt className="text-xs font-medium uppercase text-muted-foreground">{label}</dt>
+            <dd className="text-sm">{value}</dd>
+        </div>
+    );
+}
+
