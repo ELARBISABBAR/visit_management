@@ -83,7 +83,7 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                 <div className="flex flex-wrap gap-2">
                     <Link
                         href={`/accueil/visites/${visit.id}/modifier`}
-                        className="rounded-md border px-3 py-2 text-sm"
+                        className="inline-flex items-center rounded-md bg-[#3B82F6] px-3 py-2 text-sm font-medium text-white hover:bg-[#2563EB]"
                     >
                         Modifier la visite
                     </Link>
@@ -102,7 +102,7 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                         description="Confirmer l'enregistrement de l'arrivée du visiteur ?"
                         confirmLabel="Oui, enregistrer"
                         onConfirm={() => router.post(`/accueil/visites/${visit.id}/arrivee`)}
-                        triggerClassName="rounded-md border px-3 py-2 text-sm"
+                        triggerClassName="inline-flex items-center rounded-md bg-[#22C55E] px-3 py-2 text-sm font-medium text-white hover:bg-[#16A34A]"
                     />
                     <ActionConfirmDialog
                         triggerLabel="Clôturer la visite"
@@ -114,7 +114,7 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                                 badge_returned: true,
                             })
                         }
-                        triggerClassName="rounded-md border px-3 py-2 text-sm"
+                        triggerClassName="inline-flex items-center rounded-md bg-[#EF4444] px-3 py-2 text-sm font-medium text-white hover:bg-[#DC2626]"
                     />
                 </div>
             </div>
