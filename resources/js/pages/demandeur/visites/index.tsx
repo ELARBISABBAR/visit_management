@@ -3,6 +3,7 @@ import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
 import { PaginationControls } from '@/components/pagination-controls';
 import { Button } from '@/components/ui/button';
 import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
+import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -25,6 +26,14 @@ type VisitsIndexProps = {
         prev_page_url: string | null;
         next_page_url: string | null;
     };
+    filters: {
+        date?: string;
+        department_id?: string;
+        status?: string;
+        search?: string;
+    };
+    departments: Array<{ id?: number; name?: string }>;
+    statusOptions: Array<{ value?: string; label?: string }>;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -38,7 +47,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function VisitsIndex({ visits }: VisitsIndexProps) {
+export default function VisitsIndex({
+    visits,
+    filters,
+    departments,
+    statusOptions,
+}: VisitsIndexProps) {
+    const updateFilter = (key: keyof VisitsIndexProps['filters'], value: string) => {
+        router.get(
+            '/demandeur/visites',
+            {
+                ...filters,
+                [key]: value,
+                page: 1,
+            },
+            { preserveState: true, replace: true },
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mes visites" />
@@ -51,6 +77,70 @@ export default function VisitsIndex({ visits }: VisitsIndexProps) {
                 </Link>
             </div>
             <div className="space-y-4 px-4 pb-4 md:px-6 md:pb-6">
+                <div className="grid gap-4 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm md:grid-cols-4">
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="filter-date" className="text-sm font-medium text-[#374151]">
+                            Filtrer par date
+                        </label>
+                        <Input
+                            id="filter-date"
+                            type="date"
+                            value={filters.date ?? ''}
+                            onChange={(e) => updateFilter('date', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="filter-department" className="text-sm font-medium text-[#374151]">
+                            Filtrer par département
+                        </label>
+                        <select
+                            id="filter-department"
+                            className="h-10 rounded-lg border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#F4B400]/40"
+                            value={filters.department_id ?? ''}
+                            onChange={(e) => updateFilter('department_id', e.target.value)}
+                        >
+                            <option value="">Tous</option>
+                            {departments.map((department) => (
+                                <option key={department.id} value={department.id}>
+                                    {department.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="filter-status" className="text-sm font-medium text-[#374151]">
+                            Filtrer par statut
+                        </label>
+                        <select
+                            id="filter-status"
+                            className="h-10 rounded-lg border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#F4B400]/40"
+                            value={filters.status ?? ''}
+                            onChange={(e) => updateFilter('status', e.target.value)}
+                        >
+                            <option value="">Tous</option>
+                            {statusOptions.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                    {status.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col space-y-1">
+                        <label htmlFor="filter-search" className="text-sm font-medium text-[#374151]">
+                            Rechercher par nom du visiteur
+                        </label>
+                        <Input
+                            id="filter-search"
+                            type="text"
+                            defaultValue={filters.search ?? ''}
+                            onBlur={(e) => updateFilter('search', e.target.value)}
+                        />
+                    </div>
+                </div>
+
                 <DataTable headers={['Visitor', 'Company', 'Department', 'Arrival', 'Status', 'Actions']}>
                     {visits.data.length === 0 ? (
                         <DataTableRow>

@@ -24,11 +24,23 @@ class VisitController extends Controller
     public function index(Request $request): Response
     {
         $demandeur = $request->user();
+        $filters = $request->only(['date', 'department_id', 'status', 'search']);
 
-        $visits = $this->visitService->paginateForDemandeur($demandeur);
+        $visits = $this->visitService->paginateForDemandeur($demandeur, $filters);
 
         return Inertia::render('demandeur/visites/index', [
             'visits' => $visits,
+            'filters' => $filters,
+            'departments' => \App\Models\Department::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'statusOptions' => collect(VisitStatus::cases())
+                ->reject(fn (VisitStatus $status) => $status === VisitStatus::AWAITING_BADGE_RETURN)
+                ->map(fn (VisitStatus $status) => [
+                    'value' => $status->value,
+                    'label' => $status->label(),
+                ])
+                ->values(),
         ]);
     }
 
@@ -156,10 +168,13 @@ class VisitController extends Controller
         return Inertia::render('demandeur/visites/historique', [
             'visits' => $visits,
             'filters' => $filters,
-            'statusOptions' => collect(VisitStatus::cases())->map(fn (VisitStatus $status) => [
-                'value' => $status->value,
-                'label' => $status->label(),
-            ])->values(),
+            'statusOptions' => collect(VisitStatus::cases())
+                ->reject(fn (VisitStatus $status) => $status === VisitStatus::AWAITING_BADGE_RETURN)
+                ->map(fn (VisitStatus $status) => [
+                    'value' => $status->value,
+                    'label' => $status->label(),
+                ])
+                ->values(),
         ]);
     }
 }

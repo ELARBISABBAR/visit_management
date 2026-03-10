@@ -18,16 +18,16 @@ type VisitDetails = {
     status?: string | null;
     status_label?: string | null;
     arrival_at?: string | null;
+    departure_at?: string | null;
     badge_color?: string | null;
 };
 
 type VisitShowProps = {
     visit: VisitDetails;
-    canEdit: boolean;
     canCancel: boolean;
 };
 
-export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps) {
+export default function VisitShow({ visit, canCancel }: VisitShowProps) {
     const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -63,6 +63,7 @@ export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps)
                     <Detail label="Date / heure de visite" value={visit.scheduled_at ?? '—'} />
                     <Detail label="Statut" value={visit.status_label ?? '—'} />
                     <Detail label="Heure d'arrivée" value={visit.arrival_at ?? '—'} />
+                    <Detail label="Heure de départ" value={visit.departure_at ?? '—'} />
                     <Detail label="Couleur du badge attribué" value={badgeColorLabel} />
                 </dl>
 
@@ -89,14 +90,12 @@ export default function VisitShow({ visit, canEdit, canCancel }: VisitShowProps)
                 </div>
 
                 <div className="flex gap-3">
-                    {canEdit && (
-                        <Link
-                            href={`/demandeur/visites/${visit.id}/modifier`}
-                            className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm hover:bg-muted"
-                        >
-                            Modifier la visite
-                        </Link>
-                    )}
+                    <Link
+                        href="/demandeur/visites"
+                        className="inline-flex items-center rounded-md bg-[#3B82F6] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#2563EB]"
+                    >
+                        Retour
+                    </Link>
                     {canCancel && (
                         <ActionConfirmDialog
                             triggerLabel="Annuler la visite"

@@ -86,10 +86,10 @@ export default function AccueilDashboard({
             <Head title="Tableau de bord – Accueil" />
             <div className="space-y-6 p-4 md:p-6">
                 <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <StatCard title="Total Visits" value={stats.planned_today} icon={CalendarDays} trend="Scheduled for today" />
-                    <StatCard title="Visitors Today" value={todayVisits.length} icon={Users} trend="Arrivals expected today" />
-                    <StatCard title="Visitors Inside" value={stats.present_now} icon={Building2} trend="Currently in the building" />
-                    <StatCard title="Departments" value={stats.completed_today} icon={Clock3} trend="Completed visits today" />
+                    <StatCard title="Visites totales" value={stats.planned_today} icon={CalendarDays} trend="Visites programmées aujourd'hui" />
+                    <StatCard title="Visiteurs aujourd'hui" value={todayVisits.length} icon={Users} trend="Arrivées attendues aujourd'hui" />
+                    <StatCard title="Visiteurs à l'intérieur" value={stats.present_now} icon={Building2} trend="Actuellement dans le bâtiment" />
+                    <StatCard title="Visites terminées" value={stats.completed_today} icon={Clock3} trend="Visites clôturées aujourd'hui" />
                 </section>
 
                 <section className="grid gap-6 lg:grid-cols-2">

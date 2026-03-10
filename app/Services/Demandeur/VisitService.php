@@ -122,11 +122,29 @@ class VisitService
     /**
      * Paginate all visits created by the demandeur.
      */
-    public function paginateForDemandeur(User $demandeur, int $perPage = 10): LengthAwarePaginator
+    public function paginateForDemandeur(User $demandeur, array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        return Visit::query()
+        $query = Visit::query()
             ->where('demandeur_id', $demandeur->id)
-            ->orderByDesc('created_at')
+            ->orderByDesc('created_at');
+
+        if (! empty($filters['search'])) {
+            $query->where('visitor_name', 'like', '%'.$filters['search'].'%');
+        }
+
+        if (! empty($filters['status']) && in_array($filters['status'], VisitStatus::values(), true)) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['department_id'])) {
+            $query->where('department_id', (int) $filters['department_id']);
+        }
+
+        if (! empty($filters['date'])) {
+            $query->whereDate('scheduled_at', $filters['date']);
+        }
+
+        return $query
             ->paginate($perPage)
             ->through(function (Visit $visit) {
                 return [

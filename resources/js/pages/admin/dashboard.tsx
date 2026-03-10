@@ -34,14 +34,14 @@ export default function AdminDashboard({ metrics }: AdminDashboardProps) {
             <Head title="Admin dashboard" />
             <div className="space-y-6 p-4 md:p-6">
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <StatCard title="Total Visits" value={metrics.total_users} icon={Users} trend="Global user base" />
-                    <StatCard title="Visitors Today" value={metrics.demandeurs} icon={UserCog} trend="Demanders active" />
-                    <StatCard title="Visitors Inside" value={metrics.accueils} icon={ShieldCheck} trend="Reception staff available" />
-                    <StatCard title="Departments" value={metrics.departments} icon={Building2} trend="Active departments" />
+                    <StatCard title="Utilisateurs totaux" value={metrics.total_users} icon={Users} trend="Base utilisateurs globale" />
+                    <StatCard title="Demandeurs" value={metrics.demandeurs} icon={UserCog} trend="Demandeurs actifs" />
+                    <StatCard title="Agents d'accueil" value={metrics.accueils} icon={ShieldCheck} trend="Personnel d'accueil disponible" />
+                    <StatCard title="Départements" value={metrics.departments} icon={Building2} trend="Départements actifs" />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <StatCard title="Admin Users" value={metrics.admins} icon={Users} trend="Governance and permissions" />
-                    <StatCard title="Badges" value={metrics.badges} icon={IdCard} trend="Available badge inventory" />
+                    <StatCard title="Administrateurs" value={metrics.admins} icon={Users} trend="Gouvernance et permissions" />
+                    <StatCard title="Badges" value={metrics.badges} icon={IdCard} trend="Stock de badges disponible" />
                 </div>
             </div>
         </AppLayout>

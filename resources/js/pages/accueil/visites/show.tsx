@@ -14,6 +14,7 @@ type VisitDetails = {
     demandeur?: string | null;
     department?: string | null;
     scheduled_at?: string | null;
+    status?: string | null;
     status_label?: string | null;
     reason?: string | null;
     badge_color?: string | null;
@@ -28,6 +29,8 @@ type VisitShowProps = {
 
 export default function AccueilVisitShow({ visit }: VisitShowProps) {
     const badgeColorLabel = badgeColorByVisitorType(visit.visitor_type);
+    const isVisitClosed = isClosedVisit(visit.status, visit.status_label);
+    const isVisitInProgress = isInProgressVisit(visit.status, visit.status_label);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord – Accueil', href: '/accueil/dashboard' },
@@ -82,40 +85,54 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link
-                        href={`/accueil/visites/${visit.id}/modifier`}
+                        href="/accueil/visites"
                         className="inline-flex items-center rounded-md bg-[#3B82F6] px-3 py-2 text-sm font-medium text-white hover:bg-[#2563EB]"
                     >
-                        Modifier la visite
+                        Retour
                     </Link>
-                    <ActionConfirmDialog
-                        triggerLabel="Annuler la visite"
-                        title="Confirmer l'annulation"
-                        description="Voulez-vous vraiment annuler cette visite ?"
-                        confirmLabel="Oui, annuler"
-                        onConfirm={() => router.post(`/accueil/visites/${visit.id}/annuler`)}
-                        triggerClassName="rounded-md border border-destructive px-3 py-2 text-sm text-destructive"
-                        confirmClassName="inline-flex text-white items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
-                    />
-                    <ActionConfirmDialog
-                        triggerLabel="Enregistrer l'arrivée"
-                        title="Confirmer l'arrivée"
-                        description="Confirmer l'enregistrement de l'arrivée du visiteur ?"
-                        confirmLabel="Oui, enregistrer"
-                        onConfirm={() => router.post(`/accueil/visites/${visit.id}/arrivee`)}
-                        triggerClassName="inline-flex items-center rounded-md bg-[#22C55E] px-3 py-2 text-sm font-medium text-white hover:bg-[#16A34A]"
-                    />
-                    <ActionConfirmDialog
-                        triggerLabel="Clôturer la visite"
-                        title="Confirmer la clôture"
-                        description="Confirmer la clôture de la visite et le retour du badge ?"
-                        confirmLabel="Oui, clôturer"
-                        onConfirm={() =>
-                            router.post(`/accueil/visites/${visit.id}/cloturer`, {
-                                badge_returned: true,
-                            })
-                        }
-                        triggerClassName="inline-flex items-center rounded-md bg-[#EF4444] px-3 py-2 text-sm font-medium text-white hover:bg-[#DC2626]"
-                    />
+
+                    {!isVisitClosed && !isVisitInProgress && (
+                        <>
+                            <Link
+                                href={`/accueil/visites/${visit.id}/modifier`}
+                                className="inline-flex items-center rounded-md bg-[#3B82F6] px-3 py-2 text-sm font-medium text-white hover:bg-[#2563EB]"
+                            >
+                                Modifier la visite
+                            </Link>
+                            <ActionConfirmDialog
+                                triggerLabel="Annuler la visite"
+                                title="Confirmer l'annulation"
+                                description="Voulez-vous vraiment annuler cette visite ?"
+                                confirmLabel="Oui, annuler"
+                                onConfirm={() => router.post(`/accueil/visites/${visit.id}/annuler`)}
+                                triggerClassName="rounded-md border border-destructive px-3 py-2 text-sm text-destructive"
+                                confirmClassName="inline-flex text-white items-center rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                            />
+                            <ActionConfirmDialog
+                                triggerLabel="Enregistrer l'arrivée"
+                                title="Confirmer l'arrivée"
+                                description="Confirmer l'enregistrement de l'arrivée du visiteur ?"
+                                confirmLabel="Oui, enregistrer"
+                                onConfirm={() => router.post(`/accueil/visites/${visit.id}/arrivee`)}
+                                triggerClassName="inline-flex items-center rounded-md bg-[#22C55E] px-3 py-2 text-sm font-medium text-white hover:bg-[#16A34A]"
+                            />
+                        </>
+                    )}
+
+                    {!isVisitClosed && (
+                        <ActionConfirmDialog
+                            triggerLabel="Clôturer la visite"
+                            title="Confirmer la clôture"
+                            description="Confirmer la clôture de la visite et le retour du badge ?"
+                            confirmLabel="Oui, clôturer"
+                            onConfirm={() =>
+                                router.post(`/accueil/visites/${visit.id}/cloturer`, {
+                                    badge_returned: true,
+                                })
+                            }
+                            triggerClassName="inline-flex items-center rounded-md bg-[#EF4444] px-3 py-2 text-sm font-medium text-white hover:bg-[#DC2626]"
+                        />
+                    )}
                 </div>
             </div>
             </div>
@@ -148,5 +165,41 @@ function badgeColorByVisitorType(visitorType: string): string {
     }
 
     return '—';
+}
+
+function isClosedVisit(status?: string | null, statusLabel?: string | null): boolean {
+    const normalizedStatus = normalizeStatusValue(status);
+    const normalizedLabel = normalizeStatusValue(statusLabel);
+
+    return (
+        normalizedStatus === 'closed' ||
+        normalizedStatus === 'terminee' ||
+        normalizedStatus === 'cancelled' ||
+        normalizedStatus === 'annulee' ||
+        normalizedLabel.includes('terminee') ||
+        normalizedLabel.includes('cloturee') ||
+        normalizedLabel.includes('closed') ||
+        normalizedLabel.includes('annulee') ||
+        normalizedLabel.includes('cancelled')
+    );
+}
+
+function isInProgressVisit(status?: string | null, statusLabel?: string | null): boolean {
+    const normalizedStatus = normalizeStatusValue(status);
+    const normalizedLabel = normalizeStatusValue(statusLabel);
+
+    return (
+        normalizedStatus === 'in_progress' ||
+        normalizedStatus === 'encours' ||
+        normalizedLabel.includes('en cours') ||
+        normalizedLabel.includes('encours')
+    );
+}
+
+function normalizeStatusValue(value?: string | null): string {
+    return (value ?? '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 }
 

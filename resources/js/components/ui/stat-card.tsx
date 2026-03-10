@@ -14,7 +14,7 @@ export function StatCard({
     title,
     value,
     icon: Icon,
-    trend = 'Updated in real time',
+    trend = 'Mise a jour en temps reel',
     className,
 }: StatCardProps) {
     return (

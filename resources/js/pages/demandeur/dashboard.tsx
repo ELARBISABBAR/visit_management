@@ -107,10 +107,10 @@ export default function DemandeurDashboard({
                 {/* Stats */}
                 <section>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        <StatCard title="Total Visits" value={stats.upcoming} icon={CalendarDays} trend="Upcoming scheduled visits" />
-                        <StatCard title="Visitors Today" value={stats.today} icon={Users} trend="Planned for today" />
-                        <StatCard title="Visitors Inside" value={stats.in_progress} icon={Building2} trend="Currently in progress" />
-                        <StatCard title="Departments" value={stats.completed} icon={Clock3} trend="Completed visits count" />
+                        <StatCard title="Visites totales" value={stats.upcoming} icon={CalendarDays} trend="Visites programmées à venir" />
+                        <StatCard title="Visiteurs aujourd'hui" value={stats.today} icon={Users} trend="Visites prévues pour aujourd'hui" />
+                        <StatCard title="Visiteurs à l'intérieur" value={stats.in_progress} icon={Building2} trend="Visites actuellement en cours" />
+                        <StatCard title="Visites terminées" value={stats.completed} icon={Clock3} trend="Nombre de visites clôturées" />
                     </div>
                 </section>
 

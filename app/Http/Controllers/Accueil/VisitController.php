@@ -36,10 +36,13 @@ class VisitController extends Controller
             'visits' => $visits,
             'filters' => $filters,
             'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
-            'statusOptions' => collect(VisitStatus::cases())->map(fn (VisitStatus $status) => [
-                'value' => $status->value,
-                'label' => $status->label(),
-            ])->values(),
+            'statusOptions' => collect(VisitStatus::cases())
+                ->reject(fn (VisitStatus $status) => $status === VisitStatus::AWAITING_BADGE_RETURN)
+                ->map(fn (VisitStatus $status) => [
+                    'value' => $status->value,
+                    'label' => $status->label(),
+                ])
+                ->values(),
         ]);
     }
 
