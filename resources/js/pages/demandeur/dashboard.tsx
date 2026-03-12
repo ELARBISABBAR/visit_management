@@ -6,6 +6,7 @@ import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-tab
 import { StatCard } from '@/components/ui/stat-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime, formatTime } from '@/lib/utils';
 import type { Auth, BreadcrumbItem } from '@/types';
 
 type VisitSummary = {
@@ -221,7 +222,7 @@ export default function DemandeurDashboard({
                                     )}
                                     {notification.data.arrival_time && (
                                         <p className="text-xs text-[#6B7280]">
-                                            Heure d&apos;arrivée : {notification.data.arrival_time}
+                                            Heure d&apos;arrivée : {formatTime(notification.data.arrival_time)}
                                         </p>
                                     )}
                                     {notification.data.department && (
@@ -265,7 +266,7 @@ function DashboardSection({ title, visits, emptyText }: DashboardSectionProps) {
                             <DataTableCell className="font-medium">{visit.visitor_name}</DataTableCell>
                             <DataTableCell className="text-[#6B7280]">{visit.company ?? '-'}</DataTableCell>
                             <DataTableCell className="text-[#6B7280]">{visit.department ?? '-'}</DataTableCell>
-                            <DataTableCell className="text-[#6B7280]">{visit.scheduled_at ?? '-'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{formatDateTime(visit.scheduled_at)}</DataTableCell>
                             <DataTableCell>
                                 <StatusBadge status={visit.status} label={visit.status_label} />
                             </DataTableCell>

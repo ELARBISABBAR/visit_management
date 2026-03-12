@@ -3,6 +3,7 @@ import { PaginationControls } from '@/components/pagination-controls';
 import { Button } from '@/components/ui/button';
 import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-table';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime } from '@/lib/utils';
 import type { BreadcrumbItem, User } from '@/types';
 
 type PaginatedUsers = {
@@ -77,7 +78,7 @@ export default function UsersIndex({ users }: UsersPageProps) {
                                     ))}
                                 </select>
                             </DataTableCell>
-                            <DataTableCell className="text-[#6B7280]">{user.created_at ?? '—'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{formatDateTime(user.created_at)}</DataTableCell>
                             <DataTableCell className="text-right">
                                 <div className="flex justify-end gap-2">
                                     <Button variant="outline" size="sm" asChild>

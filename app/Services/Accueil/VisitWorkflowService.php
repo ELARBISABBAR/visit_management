@@ -14,7 +14,9 @@ use App\Notifications\VisitorArrivedNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class VisitWorkflowService
 {
@@ -195,7 +197,7 @@ class VisitWorkflowService
         $visit->status = VisitStatus::CANCELLED;
         $visit->save();
 
-        $visit->demandeur?->notify(new VisitCancelledNotification($visit));
+        $this->notifyDemandeurSafely($visit, new VisitCancelledNotification($visit), 'cancel');
     }
 
     public function registerArrival(Visit $visit): void
@@ -229,7 +231,7 @@ class VisitWorkflowService
         }
 
         $visit->load('department');
-        $visit->demandeur?->notify(new VisitorArrivedNotification($visit));
+        $this->notifyDemandeurSafely($visit, new VisitorArrivedNotification($visit), 'check-in');
     }
 
     public function closeVisit(Visit $visit, bool $badgeReturned): void
@@ -277,7 +279,7 @@ class VisitWorkflowService
 
         $visit->refresh();
         $visit->loadMissing('department');
-        $visit->demandeur?->notify(new VisitCompletedNotification($visit));
+        $this->notifyDemandeurSafely($visit, new VisitCompletedNotification($visit), 'check-out');
     }
 
     /**
@@ -439,6 +441,24 @@ class VisitWorkflowService
             'date_from' => $start->toDateString(),
             'date_to' => $end->toDateString(),
         ];
+    }
+
+    private function notifyDemandeurSafely(Visit $visit, object $notification, string $action): void
+    {
+        if (! $visit->demandeur) {
+            return;
+        }
+
+        try {
+            $visit->demandeur->notify($notification);
+        } catch (Throwable $exception) {
+            Log::warning('Visit notification failed, action kept successful.', [
+                'visit_id' => $visit->id,
+                'demandeur_id' => $visit->demandeur_id,
+                'action' => $action,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }
 

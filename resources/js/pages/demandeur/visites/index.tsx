@@ -6,6 +6,7 @@ import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-tab
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitRow = {
@@ -154,7 +155,7 @@ export default function VisitsIndex({
                                 <DataTableCell className="font-medium">{visit.visitor_name}</DataTableCell>
                                 <DataTableCell className="text-[#6B7280]">{visit.company ?? '—'}</DataTableCell>
                                 <DataTableCell className="text-[#6B7280]">{visit.department ?? '—'}</DataTableCell>
-                                <DataTableCell className="text-[#6B7280]">{visit.scheduled_at ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{formatDateTime(visit.scheduled_at)}</DataTableCell>
                                 <DataTableCell>
                                     <StatusBadge status={visit.status} label={visit.status_label} />
                                 </DataTableCell>

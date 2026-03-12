@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime, formatDurationHoursMinutes, formatTime } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitDetails = {
@@ -53,14 +54,14 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                     <Detail label="Société" value={visit.company ?? '—'} />
                     <Detail label="Demandeur (hôte)" value={visit.demandeur ?? '—'} />
                     <Detail label="Département" value={visit.department ?? '—'} />
-                    <Detail label="Date et heure de visite" value={visit.scheduled_at ?? '—'} />
+                    <Detail label="Date et heure de visite" value={formatDateTime(visit.scheduled_at)} />
                     <Detail label="Statut de la visite" value={visit.status_label ?? '—'} />
                     <Detail label="Couleur du badge" value={badgeColorLabel} />
-                    <Detail label="Heure d'arrivée" value={visit.arrival_at ?? '—'} />
-                    <Detail label="Heure de départ" value={visit.departure_at ?? '—'} />
+                    <Detail label="Heure d'arrivée" value={formatTime(visit.arrival_at)} />
+                    <Detail label="Heure de départ" value={formatTime(visit.departure_at)} />
                     <Detail
                         label="Temps passé avec le demandeur"
-                        value={visit.time_with_demandeur ?? '—'}
+                        value={formatDurationHoursMinutes(visit.time_with_demandeur)}
                     />
                 </dl>
                 {visit.is_event && (

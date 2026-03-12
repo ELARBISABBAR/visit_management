@@ -6,6 +6,7 @@ import { DataTable, DataTableCell, DataTableRow } from '@/components/ui/data-tab
 import { StatCard } from '@/components/ui/stat-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitRow = {
@@ -180,7 +181,7 @@ function DashboardTable({ title, rows }: { title: string; rows: VisitRow[] }) {
                             <DataTableCell className="text-[#6B7280]">{row.company ?? '-'}</DataTableCell>
                             <DataTableCell className="text-[#6B7280]">{row.department ?? '-'}</DataTableCell>
                             <DataTableCell className="text-[#6B7280]">{row.demandeur ?? '-'}</DataTableCell>
-                            <DataTableCell className="text-[#6B7280]">{row.scheduled_at ?? '-'}</DataTableCell>
+                            <DataTableCell className="text-[#6B7280]">{formatDateTime(row.scheduled_at)}</DataTableCell>
                             <DataTableCell>
                                 <StatusBadge status={row.status} label={row.status_label} />
                             </DataTableCell>

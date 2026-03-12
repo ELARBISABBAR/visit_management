@@ -18,6 +18,7 @@ import { Modal } from '@/components/ui/modal';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { VisitorTypeBadge } from '@/components/ui/visitor-type-badge';
 import AppLayout from '@/layouts/app-layout';
+import { formatDateTime, formatDurationHoursMinutes, formatTime } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitRow = {
@@ -192,7 +193,7 @@ export default function AccueilVisitsIndex({
                                 <DataTableCell className="text-[#6B7280]">{visit.company ?? '—'}</DataTableCell>
                                 <DataTableCell className="text-[#6B7280]">{visit.demandeur ?? '—'}</DataTableCell>
                                 <DataTableCell className="text-[#6B7280]">{visit.department ?? '—'}</DataTableCell>
-                                <DataTableCell className="text-[#6B7280]">{visit.scheduled_at ?? '—'}</DataTableCell>
+                                <DataTableCell className="text-[#6B7280]">{formatDateTime(visit.scheduled_at)}</DataTableCell>
                                 <DataTableCell>
                                     <StatusBadge status={visit.status} label={visit.status_label} />
                                 </DataTableCell>
@@ -283,7 +284,7 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                         <InfoItem
                             icon={<CalendarDays className="size-4" />}
                             label="Date de visite"
-                            value={visit.scheduled_at ?? '—'}
+                            value={formatDateTime(visit.scheduled_at)}
                         />
                         <div className="flex items-center justify-end">
                             <StatusBadge status={visit.status} label={visit.status_label} />
@@ -294,17 +295,17 @@ function VisitPreviewModal({ visit }: { visit: VisitRow }) {
                         <InfoItem
                             icon={<LogIn className="size-4" />}
                             label="Arrivée"
-                            value={visit.arrival_at ?? '—'}
+                            value={formatTime(visit.arrival_at)}
                         />
                         <InfoItem
                             icon={<LogOut className="size-4" />}
                             label="Départ"
-                            value={visit.departure_at ?? '—'}
+                            value={formatTime(visit.departure_at)}
                         />
                         <InfoItem
                             icon={<Timer className="size-4" />}
                             label="Durée de visite"
-                            value={visit.time_with_demandeur ?? '—'}
+                            value={formatDurationHoursMinutes(visit.time_with_demandeur)}
                         />
                     </div>
 
