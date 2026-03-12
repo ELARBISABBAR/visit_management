@@ -87,7 +87,7 @@ export default function AccueilVisitShow({ visit }: VisitShowProps) {
                 <div className="flex flex-wrap gap-2">
                     <Link
                         href="/accueil/visites"
-                        className="inline-flex items-center rounded-md bg-[#3B82F6] px-3 py-2 text-sm font-medium text-white hover:bg-[#2563EB]"
+                        className="inline-flex items-center rounded-md bg-[#6B7280] px-3 py-2 text-sm font-medium text-white hover:bg-[#4B5563]"
                     >
                         Retour
                     </Link>

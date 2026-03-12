@@ -65,7 +65,8 @@ export function formatDurationHoursMinutes(value?: string | null): string {
     if (hhmmssMatch) {
         const hours = Number(hhmmssMatch[1]);
         const minutes = Number(hhmmssMatch[2]);
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const totalMinutes = hours * 60 + minutes;
+        return formatDurationLabel(totalMinutes);
     }
 
     const normalized = trimmed.toLowerCase().replace(',', '.');
@@ -76,18 +77,27 @@ export function formatDurationHoursMinutes(value?: string | null): string {
         const hours = hourMatch ? Number(hourMatch[1]) : 0;
         const minutes = minuteMatch ? Number(minuteMatch[1]) : 0;
         const totalMinutes = Math.round(hours * 60 + minutes);
-        const outHours = Math.floor(totalMinutes / 60);
-        const outMinutes = totalMinutes % 60;
-        return `${String(outHours).padStart(2, '0')}:${String(outMinutes).padStart(2, '0')}`;
+        return formatDurationLabel(totalMinutes);
     }
 
     const numberOnly = Number(normalized);
     if (!Number.isNaN(numberOnly)) {
         const totalMinutes = Math.round(numberOnly);
-        const outHours = Math.floor(totalMinutes / 60);
-        const outMinutes = totalMinutes % 60;
-        return `${String(outHours).padStart(2, '0')}:${String(outMinutes).padStart(2, '0')}`;
+        return formatDurationLabel(totalMinutes);
     }
 
     return '—';
+}
+
+function formatDurationLabel(totalMinutes: number): string {
+    const safeMinutes = Math.max(0, totalMinutes);
+
+    if (safeMinutes < 60) {
+        return `${safeMinutes}min`;
+    }
+
+    const hours = Math.floor(safeMinutes / 60);
+    const minutes = safeMinutes % 60;
+
+    return `${hours}h ${String(minutes).padStart(2, '0')}min`;
 }
