@@ -10,7 +10,7 @@ export type UseAppearanceReturn = {
 };
 
 const listeners = new Set<() => void>();
-let currentAppearance: Appearance = 'system';
+let currentAppearance: Appearance = 'light';
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') return false;
@@ -25,9 +25,9 @@ const setCookie = (name: string, value: string, days = 365): void => {
 };
 
 const getStoredAppearance = (): Appearance => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
 
-    return (localStorage.getItem('appearance') as Appearance) || 'system';
+    return (localStorage.getItem('appearance') as Appearance) || 'light';
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
@@ -62,12 +62,10 @@ const handleSystemThemeChange = (): void => applyTheme(currentAppearance);
 export function initializeTheme(): void {
     if (typeof window === 'undefined') return;
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
-    currentAppearance = getStoredAppearance();
+    // Enforce light mode by default on every app load.
+    localStorage.setItem('appearance', 'light');
+    setCookie('appearance', 'light');
+    currentAppearance = 'light';
     applyTheme(currentAppearance);
 
     // Set up system theme change listener

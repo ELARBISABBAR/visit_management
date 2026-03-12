@@ -14,6 +14,9 @@ type PageProps = {
     };
 };
 
+// Prevent duplicate toasts (notably in React StrictMode double effects).
+const activeToastKeys = new Set<string>();
+
 export function AppToaster() {
     const { props } = usePage<PageProps>();
     const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -32,10 +35,17 @@ export function AppToaster() {
     }, [props.flash?.success, props.flash?.error]);
 
     const pushToast = (message: string, type: 'success' | 'error') => {
+        const toastKey = `${type}:${message}`;
+        if (activeToastKeys.has(toastKey)) {
+            return;
+        }
+
+        activeToastKeys.add(toastKey);
         const id = Date.now() + Math.floor(Math.random() * 1000);
         setToasts((current) => [...current, { id, message, type }]);
 
         window.setTimeout(() => {
+            activeToastKeys.delete(toastKey);
             setToasts((current) => current.filter((toast) => toast.id !== id));
         }, 3500);
     };
