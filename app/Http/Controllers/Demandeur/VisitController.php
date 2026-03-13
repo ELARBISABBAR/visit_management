@@ -75,6 +75,12 @@ class VisitController extends Controller
         $this->authorize('view', $visit);
 
         $visit->load('department');
+        $departureAt = $visit->status === VisitStatus::COMPLETED
+            ? $visit->updated_at
+            : null;
+        $durationMinutes = $visit->arrival_at && $departureAt
+            ? $visit->arrival_at->diffInMinutes($departureAt)
+            : null;
 
         return Inertia::render('demandeur/visites/show', [
             'visit' => [
@@ -92,6 +98,10 @@ class VisitController extends Controller
                 'status' => $visit->status?->value,
                 'status_label' => $visit->status?->label(),
                 'arrival_at' => optional($visit->arrival_at)?->toDateTimeString(),
+                'departure_at' => optional($departureAt)?->toDateTimeString(),
+                'time_with_demandeur' => $durationMinutes !== null
+                    ? $durationMinutes.' min'
+                    : null,
                 'badge_color' => $visit->badge_color,
             ],
             'canEdit' => $request->user()->can('update', $visit),

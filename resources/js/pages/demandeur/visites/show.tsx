@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ActionConfirmDialog } from '@/components/action-confirm-dialog';
 import AppLayout from '@/layouts/app-layout';
-import { formatDateTime, formatTime } from '@/lib/utils';
+import { formatDateTime, formatDurationHoursMinutes, formatTime } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 type VisitDetails = {
@@ -20,6 +20,7 @@ type VisitDetails = {
     status_label?: string | null;
     arrival_at?: string | null;
     departure_at?: string | null;
+    time_with_demandeur?: string | null;
     badge_color?: string | null;
 };
 
@@ -65,6 +66,7 @@ export default function VisitShow({ visit, canCancel }: VisitShowProps) {
                     <Detail label="Statut" value={visit.status_label ?? '—'} />
                     <Detail label="Heure d'arrivée" value={formatTime(visit.arrival_at)} />
                     <Detail label="Heure de départ" value={formatTime(visit.departure_at)} />
+                    <Detail label="Durée de la visite" value={formatDurationHoursMinutes(visit.time_with_demandeur)} />
                     <Detail label="Couleur du badge attribué" value={badgeColorLabel} />
                 </dl>
 

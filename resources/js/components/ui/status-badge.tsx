@@ -6,7 +6,8 @@ const statusStyles: Record<string, string> = {
     in_progress: 'border-[#86EFAC] bg-[#F0FDF4] text-[#15803D]',
     inside: 'border-[#86EFAC] bg-[#F0FDF4] text-[#15803D]',
     waiting_badge_return: 'border-[#FDBA74] bg-[#FFF7ED] text-[#C2410C]',
-    closed: 'border-[#D1D5DB] bg-[#F9FAFB] text-[#4B5563]',
+    closed: 'border-[#C4B5FD] bg-[#F5F3FF] text-[#5B21B6]',
+    completed: 'border-[#C4B5FD] bg-[#F5F3FF] text-[#5B21B6]',
     cancelled: 'border-[#FCA5A5] bg-[#FEF2F2] text-[#B91C1C]',
 };
 
@@ -16,6 +17,7 @@ const statusLabels: Record<string, string> = {
     inside: 'Visitor inside',
     waiting_badge_return: 'Waiting badge return',
     closed: 'Visit closed',
+    completed: 'Visit closed',
     cancelled: 'Cancelled visit',
 };
 
